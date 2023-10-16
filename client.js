@@ -40,11 +40,11 @@ server.on('connection', (socket) => {
         console.log('ws error', err);
     });
 
-    var first = true;
+    var init = true;
     socket.on('data', (chunk) => {
-        if (first) {
+        if (init) {
             console.log(chunk.toString());
-            first = false;
+            init = false;
         }
 
         if (buffer !== null) {
