@@ -34,6 +34,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('message', (data) => {
+        console.log(data.length);
         socket.write(data);
     });
 
