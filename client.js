@@ -17,7 +17,10 @@ server.on('connection', (socket) => {
 
     // send to buffer until websocket is connected
     let buffer = [];
-    const ws = new WebSocket(HOST);
+    const ws = new WebSocket(HOST, {
+        perMessageDeflate: false,
+        maxPayload: 16 * 1024
+    });
 
     ws.on('open', () => {
         console.log(`websocket connected`);
