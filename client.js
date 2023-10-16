@@ -1,5 +1,6 @@
 const net = require('net');
 const WebSocket = require('ws');
+const shortid = require('shortid');
 
 // PORT=3000 HOST=wss://gpu6-0.serverdream.net
 const { PORT, HOST } = process.env;
@@ -13,6 +14,7 @@ server.listen(PORT, () => {
 
 // on new tcp connection
 server.on('connection', (socket) => {
+    const id = shortid();
     socket.setKeepAlive(true);
 
     // send to buffer until websocket is connected
@@ -24,7 +26,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('open', () => {
-        console.log(`websocket connected`);
+        console.log(`${id} websocket connected`);
         buffer.forEach((b) => {
             ws.send(b);
         });
@@ -36,12 +38,12 @@ server.on('connection', (socket) => {
     });
 
     ws.on('close', (close) => {
-        console.log(`websocket closed`);
+        console.log(`${id} websocket closed`);
         socket.end();
     });
 
     ws.on('error', (err) => {
-        console.log('ws error', err);
+        console.log(`${id} websocket error`, err);
     });
 
     var init = true;
@@ -73,11 +75,11 @@ server.on('connection', (socket) => {
     })
 
     socket.on('end', () => {
-        console.log('tcp closed');
+        console.log(`${id} tcp closed`);
         ws.close();
     });
 
     socket.on('error', (err) => {
-        console.log('tcp err', err);
+        console.log(`${id} tcp error`, err);
     })
 });
