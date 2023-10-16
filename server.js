@@ -44,6 +44,7 @@ wss.on('connection', (ws, req) => {
         });
 
         tcpConnection.on('end', (data) => {
+            ws.close();
             console.log('tcp closed');
         });
     });
