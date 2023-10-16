@@ -21,6 +21,36 @@ wss.on('connection', (ws, req) => {
     const hostname = HOST.split(':')[0];
     const port = HOST.split(':')[1];
 
+    // init -> debug purposes. get first messages
+    let init = true;
+    ws.on('message', (data) => {
+        if (init) {
+            console.log(data.toString());
+            init = false;
+        }
+
+        // buffer !== null -> tcp not connected YET
+        if (buffer !== null) {
+            buffer.push(data);
+            return;
+        }
+
+        if (tcpConnection.readyState === 'open') {
+            tcpConnection.write(data);
+        }
+    });
+
+    ws.on('error', (err) => {
+        console.log('ws error', err);
+    });
+
+    ws.on('close', (err) => {
+        console.log(`${getCurrentDateTime()} get ws close request`);
+        if (tcpConnection.readyState === 'open') {
+            tcpConnection.end();
+        }
+    });
+
     console.log(`${getCurrentDateTime()} connecting tcp to ${hostname}:${port}`);
     tcpConnection.connect(port, hostname, () => {
         console.log(`${getCurrentDateTime()} connected tcp to ${hostname}:${port}`);
@@ -51,36 +81,6 @@ wss.on('connection', (ws, req) => {
             ws.close();
             console.log('tcp closed');
         });
-    });
-
-    // init -> debug purposes. get first messages
-    let init = true;
-    ws.on('message', (data) => {
-        if (init) {
-            console.log(data.toString());
-            init = false;
-        }
-
-        // buffer !== null -> tcp not connected YET
-        if (buffer !== null) {
-            buffer.push(data);
-            return;
-        }
-
-        if (tcpConnection.readyState === 'open') {
-            tcpConnection.write(data);
-        }
-    });
-
-    ws.on('error', (err) => {
-        console.log('ws error', err);
-    });
-
-    ws.on('close', (err) => {
-        console.log(`${getCurrentDateTime()} get ws close request`);
-        if (tcpConnection.readyState === 'open') {
-            tcpConnection.end();
-        }
     });
 });
 
