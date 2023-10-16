@@ -9,7 +9,7 @@ const server = new net.Server();
 
 // create tcp server
 server.listen(PORT, () => {
-    console.log(`${new Date()}: waiting for new conns ${PORT} ${HOST}`);
+    console.log(`${getCurrentDateTime()}: waiting for new conns ${PORT} ${HOST}`);
 });
 
 // on new tcp connection
@@ -26,7 +26,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('open', () => {
-        console.log(`${id} websocket connected`);
+        console.log(`${getCurrentDateTime()} ${id} websocket connected`);
         buffer.forEach((b) => {
             ws.send(b);
         });
@@ -38,12 +38,12 @@ server.on('connection', (socket) => {
     });
 
     ws.on('close', (close) => {
-        console.log(`${id} websocket closed`);
+        console.log(`${getCurrentDateTime()} ${id} websocket closed`);
         socket.end();
     });
 
     ws.on('error', (err) => {
-        console.log(`${id} websocket error`, err);
+        console.log(`${getCurrentDateTime()} ${id} websocket error`, err);
     });
 
     var init = true;
@@ -66,20 +66,35 @@ server.on('connection', (socket) => {
     })
 
     socket.on('end', () => {
-        console.log(`${id} tcp closed`);
-        console.log(`${id} ${ws.readyState}`);
+        console.log(`${getCurrentDateTime()} ${id} tcp closed`);
+        console.log(`${getCurrentDateTime()} ${id} ${ws.readyState}`);
         ws.close(1002, 'done')
     });
 
     socket.on('error', (err) => {
-        console.log(`${id} tcp error ${err}`);
+        console.log(`${getCurrentDateTime()} ${id} tcp error ${err}`);
     });
 
     socket.on('close', (err) => {
-        console.log(`${id} tcp close ${err}`);
+        console.log(`${getCurrentDateTime()} ${id} tcp close`);
         if (ws.readyState === WebSocket.OPEN) {
-            console.log(`${id} closing ws due to tcp close`)
+            console.log(`${getCurrentDateTime()} ${id} closing ws due to tcp close`)
             ws.close();
         }
     })
 });
+
+function getCurrentDateTime() {
+    const now = new Date();
+
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // +1 because months are 0-based in JavaScript
+    const year = now.getFullYear();
+
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+}
