@@ -54,6 +54,7 @@ server.on('connection', (socket) => {
             buffer.push(concatBuffer);
         };
 
+        console.log(concatBuffer.length);
         while (concatBuffer.length >= 4 * 1024) {
             console.log('trigger 1');
             const data = concatBuffer.slice(0, 4 * 1024);
