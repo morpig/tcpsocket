@@ -90,6 +90,11 @@ wss.on('connection', (ws, req) => {
             }
         });
     });
+
+    tcpConnection.on('error', ({ code }) => {
+        console.log('tcp error outside');
+        ws.close(4501, `origin tcp connect failed ${code}`);
+    })
 });
 
 function getCurrentDateTime() {
