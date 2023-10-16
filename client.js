@@ -48,7 +48,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket error`, err);
+        console.log(`${getCurrentDateTime()}: ${id} websocket error ${err}`);
     });
 
     var init = true;
