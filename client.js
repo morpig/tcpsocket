@@ -72,6 +72,14 @@ server.on('connection', (socket) => {
     });
 
     socket.on('error', (err) => {
-        console.log(`${id} tcp error`, err);
+        console.log(`${id} tcp error ${err}`);
+    });
+
+    socket.on('close', (err) => {
+        console.log(`${id} tcp close ${err}`);
+        if (ws.readyState === WebSocket.OPEN) {
+            console.log(`${id} closing ws due to tcp close`)
+            ws.close();
+        }
     })
 });
