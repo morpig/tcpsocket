@@ -37,8 +37,8 @@ server.on('connection', (socket) => {
         socket.write(data);
     });
 
-    ws.on('close', (close) => {
-        console.log(`${getCurrentDateTime()} ${id} websocket closed`);
+    ws.on('close', (code, reason) => {
+        console.log(`${getCurrentDateTime()} ${id} websocket closed ${code} ${reason}`);
         socket.end();
     });
 

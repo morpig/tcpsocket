@@ -79,8 +79,15 @@ wss.on('connection', (ws, req) => {
         });
 
         tcpConnection.on('end', (data) => {
-            ws.close();
+            console.log('tcp end');
+        });
+
+        tcpConnection.on('close', (data) => {
             console.log('tcp closed');
+            if (ws.readyState === WebSocket.OPEN) {
+                console.log(`${getCurrentDateTime()} closing ws due to tcp closed`)
+                ws.close(4500, 'origin tcp closed');
+            }
         });
     });
 });
