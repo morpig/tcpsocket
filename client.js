@@ -21,7 +21,7 @@ server.on('connection', (socket) => {
     let buffer = [];
     const ws = new WebSocket(HOST, {
         perMessageDeflate: false,
-        maxPayload: 32 * 1024,
+        maxPayload: 64 * 1024,
         skipUTF8Validation: false
     });
 
