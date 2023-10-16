@@ -32,7 +32,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('open', () => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected (${performance.now() - tcpOpen}ms)`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`);
         buffer.forEach((b) => {
             ws.send(b);
         });
