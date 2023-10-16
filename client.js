@@ -1,6 +1,5 @@
 const net = require('net');
 const WebSocket = require('ws');
-const shortid = require('shortid');
 
 // PORT=3000 HOST=wss://gpu6-0.serverdream.net
 const { PORT, HOST } = process.env;
@@ -14,7 +13,7 @@ server.listen(PORT, () => {
 
 // on new tcp connection
 server.on('connection', (socket) => {
-    const id = shortid();
+    const id = generateRandomCharacters(6);
     socket.setKeepAlive(true);
 
     // send to buffer until websocket is connected
@@ -100,4 +99,16 @@ function getCurrentDateTime() {
     const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
 
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+}
+
+function generateRandomCharacters(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let randomChars = '';
+  
+    while (randomChars.length < length) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      randomChars += characters.charAt(randomIndex);
+    }
+  
+    return randomChars;
 }
