@@ -19,7 +19,7 @@ server.on('connection', (socket) => {
     let buffer = [];
     const ws = new WebSocket(HOST, {
         perMessageDeflate: false,
-        maxPayload: 16 * 1024,
+        maxPayload: 32 * 1024,
         skipUTF8Validation: false
     });
 
@@ -58,16 +58,16 @@ server.on('connection', (socket) => {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
-            if (chunk.length <= 16 * 1024) {
+            if (chunk.length <= 32 * 1024) {
                 ws.send(chunk);
                 return;
             }
             bufferConcat = Buffer.concat([bufferConcat, chunk]);
-            while (bufferConcat.length >= 16 * 1024) {
-                const data = bufferConcat.slice(0, 16 * 1024);
+            while (bufferConcat.length >= 32 * 1024) {
+                const data = bufferConcat.slice(0, 32 * 1024);
                 console.log(data.length);
                 ws.send(data);
-                bufferConcat = bufferConcat.slice(16 * 1024);
+                bufferConcat = bufferConcat.slice(32 * 1024);
             }
             return;
         }

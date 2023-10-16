@@ -33,11 +33,22 @@ wss.on('connection', (ws, req) => {
         });
         buffer = null;
 
+        let bufferConcat = Buffer.alloc(0);
         tcpConnection.on('data', (data) => {
-            //forward tcp data -> ws. validate connection status
-            if (ws.readyState === WebSocket.OPEN) {
+            if (data.length <= 32 * 1024) {
                 ws.send(data);
             }
+            bufferConcat = Buffer.concat([bufferConcat, data]);
+            while (bufferConcat.length >= 32 * 1024) {
+                const data = bufferConcat.slice(0, 32 * 1024);
+                console.log(data.length);
+                ws.send(data);
+                bufferConcat = bufferConcat.slice(32 * 1024)
+            }
+            //forward tcp data -> ws. validate connection status
+            /*if (ws.readyState === WebSocket.OPEN) {
+                ws.send(data);
+            }*/
         });
 
         tcpConnection.on('error', (err) => {
