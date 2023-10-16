@@ -53,7 +53,6 @@ server.on('connection', (socket) => {
     let bufferConcat = Buffer.alloc(0);
     socket.on('data', (chunk) => {
         if (init) {
-            console.log(chunk.toString());
             init = false;
         }
 
@@ -63,7 +62,6 @@ server.on('connection', (socket) => {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
-            console.log(chunk.length);
             ws.send(chunk);
             return;
         }
