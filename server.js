@@ -86,6 +86,7 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('close', (err) => {
+        console.log(tcpConnection.readyState);
         if (tcpConnection.readyState === 'open') {
             tcpConnection.end();
         }
