@@ -51,6 +51,7 @@ wss.on('connection', (ws, req) => {
     // init -> debug purposes. get first messages
     let init = true;
     ws.on('message', (data) => {
+        console.log(data);
         if (init) {
             console.log(data.toString());
             init = false;
