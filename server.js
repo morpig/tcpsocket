@@ -11,8 +11,13 @@ const wss = new WebSocket.Server({
     maxPayload: 64 * 1024
 });
 
+function heartbeat() {
+    this.isAlive = true;
+}
+  
 // on WS connect -> open TCP connection
 wss.on('connection', (ws, req) => {
+    ws.isAlive = true;
     const id = req.headers['x-websocket-id'];
     const forwardedFor = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '8.8.8.8';
 
@@ -23,6 +28,8 @@ wss.on('connection', (ws, req) => {
     let buffer = [];
     const hostname = HOST.split(':')[0];
     const port = HOST.split(':')[1];
+
+    ws.on('pong', heartbeat);
 
     // init -> debug purposes. get first messages
     let init = true;
@@ -92,6 +99,20 @@ wss.on('connection', (ws, req) => {
         ws.close(4501, `origin tcp connect failed ${code}`);
     })
 });
+
+wss.on('close', () => {
+    clearInterval(interval);
+});
+
+const interval = setInterval(() => {
+    wss.clients.forEach(function each(ws) {
+      if (ws.isAlive === false) return ws.terminate();
+  
+      ws.isAlive = false;
+      ws.ping();
+      console.log(`${getCurrentDateTime()}: sending global ping`)
+    });
+}, 5000);
 
 function getCurrentDateTime() {
     const now = new Date();
