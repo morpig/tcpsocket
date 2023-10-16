@@ -19,7 +19,7 @@ server.on('connection', (socket) => {
     let buffer = [];
     const ws = new WebSocket(HOST, {
         perMessageDeflate: false,
-        maxPayload: 4 * 1024
+        maxPayload: 32 * 1024
     });
 
     ws.on('open', () => {
