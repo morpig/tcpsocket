@@ -22,7 +22,10 @@ server.on('connection', (socket) => {
     const ws = new WebSocket(HOST, {
         perMessageDeflate: false,
         maxPayload: 64 * 1024,
-        skipUTF8Validation: false
+        skipUTF8Validation: false,
+        headers: {
+            'x-websocket-id': id
+        }
     });
 
     ws.on('open', () => {
