@@ -7,7 +7,7 @@ const { PORT, HOST } = process.env;
 const server = new net.Server();
 
 // create tcp server
-server.listen(port, () => {
+server.listen(PORT, () => {
     console.log(`${new Date()}: waiting for new conns ${PORT} ${HOST}`);
 });
 
