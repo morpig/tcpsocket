@@ -44,10 +44,9 @@ server.on('connection', (socket) => {
     let concatBuffer = Buffer.alloc(0); // create empty buffer
     socket.on('data', (chunk) => {
         concatBuffer = Buffer.concat([concatBuffer, chunk]);
-        console.log(concatBuffer);
 
         if (init) {
-            console.log(data.toString());
+            console.log(concatBuffer.toString());
             init = false;
         }
 
