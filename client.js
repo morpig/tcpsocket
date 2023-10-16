@@ -60,6 +60,7 @@ server.on('connection', (socket) => {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
+            console.log(chunk.length);
             ws.send(chunk);
             return;
         }
