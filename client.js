@@ -13,6 +13,7 @@ server.listen(PORT, () => {
 
 // on new tcp connection
 server.on('connection', (socket) => {
+    const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
     socket.setKeepAlive(true);
 
@@ -31,7 +32,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('open', () => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket connected (${performance.now() - tcpOpen}ms)`);
         buffer.forEach((b) => {
             ws.send(b);
         });
