@@ -76,7 +76,8 @@ server.on('connection', (socket) => {
 
     socket.on('end', () => {
         console.log(`${id} tcp closed`);
-        ws.close();
+        console.log(ws);
+        ws.close(1002, 'done')
     });
 
     socket.on('error', (err) => {
