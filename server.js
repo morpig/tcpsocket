@@ -9,6 +9,11 @@ const { PORT, HOST } = process.env;
 const server = createServer({
     cert: readFileSync('./ssl/cert.pem'),
     key: readFileSync('./ssl/privkey.pem')
+}, (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'application/json'
+    });
+    res.end(JSON.stringify({ message: 'OK' }));
 });
 
 const wss = new WebSocket.Server({
