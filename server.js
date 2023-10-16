@@ -1,11 +1,18 @@
+const { createServer } = require('https');
+const { readFileSync } = require('fs');
 const net = require('net');
 const WebSocket = require('ws');
 
 // PORT=3000 HOST=localhost:3000
 const { PORT, HOST } = process.env;
 
+const server = createServer({
+    cert: readFileSync('./ssl/cert.pem'),
+    key: readFileSync('./ssl/privkey.pem')
+});
+
 const wss = new WebSocket.Server({
-    port: PORT,
+    server: server,
     perMessageDeflate: false,
     skipUTF8Validation: false,
     maxPayload: 64 * 1024
@@ -127,3 +134,7 @@ function getCurrentDateTime() {
 
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}.${milliseconds}`;
 }
+
+server.listen(PORT, () => {
+    console.log(`${getCurrentDateTime()}: listening on port ${PORT}`);
+})
