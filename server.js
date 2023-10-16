@@ -58,7 +58,7 @@ wss.on('connection', (ws, req) => {
 
         // buffer !== null -> tcp not connected YET
         if (buffer !== null) {
-            buffer.push(message);
+            buffer.push(data);
             return;
         }
 
