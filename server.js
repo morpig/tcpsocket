@@ -16,7 +16,7 @@ wss.on('connection', (ws, req) => {
     const tcpConnection = new net.Socket();
     tcpConnection.setKeepAlive(true);
 
-    const buffer = [];
+    let buffer = [];
     const hostname = HOST.split(':')[0];
     const port = HOST.split(':')[1];
 
