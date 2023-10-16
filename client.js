@@ -46,7 +46,6 @@ server.on('connection', (socket) => {
 
     var init = true;
     socket.on('data', (chunk) => {
-        console.log(chunk.length);
         if (init) {
             console.log(chunk.toString());
             init = false;
