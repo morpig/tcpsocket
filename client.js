@@ -45,6 +45,7 @@ server.on('connection', (socket) => {
     });
 
     var init = true;
+    let bufferConcat = Buffer.alloc(0);
     socket.on('data', (chunk) => {
         if (init) {
             console.log(chunk.toString());
@@ -57,7 +58,13 @@ server.on('connection', (socket) => {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
-            ws.send(chunk);
+            bufferConcat = Buffer.concat([bufferConcat, chunk]);
+            console.log(bufferConcat.length);
+            while (bufferConcat.length >= 16 * 1024) {
+                const data = bufferConcat.slice(0, 16 * 1024);
+                ws.send(data);
+                bufferConcat = bufferConcat.slice(16 * 1024);
+            }
             return;
         }
     })
