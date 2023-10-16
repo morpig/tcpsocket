@@ -16,6 +16,8 @@ server.on('connection', (socket) => {
     const id = generateRandomCharacters(6);
     socket.setKeepAlive(true);
 
+    console.log(`${getCurrentDateTime()}: ${id} tcp open`)
+
     // send to buffer until websocket is connected
     let buffer = [];
     const ws = new WebSocket(HOST, {
@@ -29,7 +31,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('open', () => {
-        console.log(`${getCurrentDateTime()} ${id} websocket connected`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket connected`);
         buffer.forEach((b) => {
             ws.send(b);
         });
@@ -41,12 +43,12 @@ server.on('connection', (socket) => {
     });
 
     ws.on('close', (code, reason) => {
-        console.log(`${getCurrentDateTime()} ${id} websocket closed: ${code} ${reason}`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
         socket.end();
     });
 
     ws.on('error', (err) => {
-        console.log(`${getCurrentDateTime()} ${id} websocket error`, err);
+        console.log(`${getCurrentDateTime()}: ${id} websocket error`, err);
     });
 
     var init = true;
@@ -68,17 +70,17 @@ server.on('connection', (socket) => {
     })
 
     socket.on('end', () => {
-        console.log(`${getCurrentDateTime()} ${id} tcp end!`);
+        console.log(`${getCurrentDateTime()}: ${id} tcp end!`);
     });
 
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()} ${id} tcp error ${err}`);
+        console.log(`${getCurrentDateTime()}: ${id} tcp error ${err}`);
     });
 
     socket.on('close', (err) => {
-        console.log(`${getCurrentDateTime()} ${id} tcp closed`);
+        console.log(`${getCurrentDateTime()}: ${id} tcp closed`);
         if (ws.readyState === WebSocket.OPEN) {
-            console.log(`${getCurrentDateTime()} ${id} closing ws due to tcp close`)
+            console.log(`${getCurrentDateTime()}: ${id} closing ws due to tcp close`)
             ws.close(4000, 'receiver tcp closed');
         }
     })
