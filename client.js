@@ -41,28 +41,21 @@ server.on('connection', (socket) => {
     });
 
     var init = true;
-    let concatBuffer = Buffer.alloc(0); // create empty buffer
     socket.on('data', (chunk) => {
-        concatBuffer = Buffer.concat([concatBuffer, chunk]);
-
+        console.log(chunk.length);
         if (init) {
-            console.log(concatBuffer.toString());
+            console.log(chunk.toString());
             init = false;
         }
 
         if (buffer !== null) {
-            buffer.push(concatBuffer);
-        };
+            buffer.push(chunk);
+            return;
+        }
 
-        console.log(concatBuffer.length);
-        while (concatBuffer.length >= 4 * 1024) {
-            console.log('trigger 1');
-            const data = concatBuffer.slice(0, 4 * 1024);
-
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send(data);
-            }
-            concatBuffer = buffer.slice(4 * 1024);
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(chunk);
+            return;
         }
     })
 
