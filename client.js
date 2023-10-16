@@ -76,7 +76,7 @@ server.on('connection', (socket) => {
 
     socket.on('end', () => {
         console.log(`${id} tcp closed`);
-        console.log(ws);
+        console.log(`${id} ${ws.readyState}`);
         ws.close(1002, 'done')
     });
 
