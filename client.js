@@ -79,7 +79,7 @@ server.on('connection', (socket) => {
         console.log(`${getCurrentDateTime()} ${id} tcp close`);
         if (ws.readyState === WebSocket.OPEN) {
             console.log(`${getCurrentDateTime()} ${id} closing ws due to tcp close`)
-            ws.close();
+            ws.terminate();
         }
     })
 });
