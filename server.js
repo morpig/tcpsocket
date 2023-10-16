@@ -37,6 +37,7 @@ wss.on('connection', (ws, req) => {
         tcpConnection.on('data', (data) => {
             if (data.length <= 32 * 1024) {
                 ws.send(data);
+                return;
             }
             bufferConcat = Buffer.concat([bufferConcat, data]);
             while (bufferConcat.length >= 32 * 1024) {
