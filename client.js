@@ -38,7 +38,7 @@ server.on('connection', (socket) => {
     });
 
     ws.on('close', (code, reason) => {
-        console.log(`${getCurrentDateTime()} ${id} websocket closed ${code} ${reason}`);
+        console.log(`${getCurrentDateTime()} ${id} websocket closed: ${code} ${reason}`);
         socket.end();
     });
 
@@ -60,7 +60,6 @@ server.on('connection', (socket) => {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
-            console.log(ws.bufferedAmount);
             ws.send(chunk);
             return;
         }
