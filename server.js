@@ -12,6 +12,7 @@ const wss = new WebSocket.Server({
 });
 
 function heartbeat() {
+    console.log(`${new Date()}: received heartbeat`)
     this.isAlive = true;
 }
   
