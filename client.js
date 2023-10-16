@@ -63,9 +63,9 @@ server.on('connection', (socket) => {
                 return;
             }
             bufferConcat = Buffer.concat([bufferConcat, chunk]);
-            console.log(bufferConcat.length);
             while (bufferConcat.length >= 16 * 1024) {
                 const data = bufferConcat.slice(0, 16 * 1024);
+                console.log(data.length);
                 ws.send(data);
                 bufferConcat = bufferConcat.slice(16 * 1024);
             }
