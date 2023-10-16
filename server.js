@@ -28,7 +28,6 @@ wss.on('connection', (ws, req) => {
     let init = true;
     ws.on('message', (data) => {
         if (init) {
-            console.log(data.toString());
             init = false;
         }
 
@@ -55,7 +54,7 @@ wss.on('connection', (ws, req) => {
     });
 
     tcpConnection.connect(port, hostname, () => {
-        console.log(`${getCurrentDateTime()}: ${id} connected tcp to ${hostname}:${port} | ${forwardedFor}`);
+        console.log(`${getCurrentDateTime()}: ${id} connected tcp to tcp=${hostname}:${port}, remote=${forwardedFor}`);
 
         //send pending WS buffer data -> tcp
         buffer.forEach((b) => {
