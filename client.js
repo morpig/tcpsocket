@@ -58,6 +58,10 @@ server.on('connection', (socket) => {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
+            if (chunk.length <= 16 * 1024) {
+                ws.send(chunk);
+                return;
+            }
             bufferConcat = Buffer.concat([bufferConcat, chunk]);
             console.log(bufferConcat.length);
             while (bufferConcat.length >= 16 * 1024) {
