@@ -60,16 +60,7 @@ server.on('connection', (socket) => {
         }
 
         if (ws.readyState === WebSocket.OPEN) {
-            if (chunk.length <= 32 * 1024) {
-                ws.send(chunk);
-                return;
-            }
-            bufferConcat = Buffer.concat([bufferConcat, chunk]);
-            while (bufferConcat.length >= 32 * 1024) {
-                const data = bufferConcat.slice(0, 32 * 1024);
-                ws.send(data);
-                bufferConcat = bufferConcat.slice(32 * 1024);
-            }
+            ws.send(chunk);
             return;
         }
     })

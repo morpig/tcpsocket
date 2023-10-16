@@ -8,7 +8,7 @@ const wss = new WebSocket.Server({
     port: PORT,
     perMessageDeflate: false,
     skipUTF8Validation: false,
-    maxPayload: 32 * 1024
+    maxPayload: 64 * 1024
 });
 
 // on WS connect -> open TCP connection
@@ -35,17 +35,7 @@ wss.on('connection', (ws, req) => {
 
         let bufferConcat = Buffer.alloc(0);
         tcpConnection.on('data', (data) => {
-            if (data.length <= 32 * 1024) {
-                ws.send(data);
-                return;
-            }
-            bufferConcat = Buffer.concat([bufferConcat, data]);
-            while (bufferConcat.length >= 32 * 1024) {
-                const data = bufferConcat.slice(0, 32 * 1024);
-                console.log(data.length);
-                ws.send(data);
-                bufferConcat = bufferConcat.slice(32 * 1024)
-            }
+            ws.send(data);
             //forward tcp data -> ws. validate connection status
             /*if (ws.readyState === WebSocket.OPEN) {
                 ws.send(data);
