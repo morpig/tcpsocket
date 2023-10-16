@@ -46,18 +46,18 @@ server.on('connection', (socket) => {
         concatBuffer = Buffer.concat([concatBuffer, chunk]);
         console.log(concatBuffer);
 
+        if (init) {
+            console.log(data.toString());
+            init = false;
+        }
+
+        if (buffer !== null) {
+            buffer.push(data);
+        };
+
         while (buffer.length >= 4 * 1024) {
             console.log('trigger 1');
             const data = buffer.slice(0, 4 * 1024);
-
-            if (init) {
-                console.log(data.toString());
-                init = false;
-            }
-
-            if (buffer !== null) {
-                buffer.push(data);
-            };
 
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(data);
