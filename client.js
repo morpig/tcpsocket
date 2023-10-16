@@ -51,7 +51,7 @@ server.on('connection', (socket) => {
         }
 
         if (buffer !== null) {
-            buffer.push(data);
+            buffer.push(concatBuffer);
         };
 
         while (buffer.length >= 4 * 1024) {
