@@ -13,7 +13,9 @@ const wss = new WebSocket.Server({
 
 // on WS connect -> open TCP connection
 wss.on('connection', (ws, req) => {
-    console.log(req.headers);
+    const id = req.headers['x-websocket-id'];
+    const forwardedFor = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '8.8.8.8';
+
     // create tcp conn, keepalive true
     const tcpConnection = new net.Socket();
     tcpConnection.setKeepAlive(true);
@@ -42,19 +44,18 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('error', (err) => {
-        console.log('ws error', err);
+        console.log(`${getCurrentDateTime()}: ${id} ws error: ${err}`)
     });
 
     ws.on('close', (code, reason) => {
-        console.log(`${getCurrentDateTime()} get ws close request ${code} ${reason}`);
+        console.log(`${getCurrentDateTime()}: ${id} ws closed: ${code} ${reason}`)
         if (tcpConnection.readyState === 'open') {
             tcpConnection.end();
         }
     });
 
-    console.log(`${getCurrentDateTime()} connecting tcp to ${hostname}:${port}`);
     tcpConnection.connect(port, hostname, () => {
-        console.log(`${getCurrentDateTime()} connected tcp to ${hostname}:${port}`);
+        console.log(`${getCurrentDateTime()}: ${id} connected tcp to ${hostname}:${port} | ${forwardedFor}`);
 
         //send pending WS buffer data -> tcp
         buffer.forEach((b) => {
@@ -64,36 +65,31 @@ wss.on('connection', (ws, req) => {
         });
         buffer = null;
 
-        let bufferConcat = Buffer.alloc(0);
         tcpConnection.on('data', (data) => {
-            console.log(data.length);
-            ws.send(data);
-            //forward tcp data -> ws. validate connection status
-            /*if (ws.readyState === WebSocket.OPEN) {
+            if (ws.readyState === WebSocket.OPEN) {
                 ws.send(data);
-            }*/
+            }
         });
 
         tcpConnection.on('error', (err) => {
-            ws.close();
-            console.log('tcp error', err);
+            console.log(`${getCurrentDateTime()}: ${id} tcp error ${err}`);
         });
 
         tcpConnection.on('end', (data) => {
-            console.log('tcp end');
+            console.log(`${getCurrentDateTime()}: ${id} tcp end`);
         });
 
         tcpConnection.on('close', (data) => {
-            console.log('tcp closed');
+            console.log(`${getCurrentDateTime()}: ${id} tcp fully closed`);
             if (ws.readyState === WebSocket.OPEN) {
-                console.log(`${getCurrentDateTime()} closing ws due to tcp closed`)
+                console.log(`${getCurrentDateTime()}: ${id} closing ws due to tcp closed`);
                 ws.close(4500, 'origin tcp closed');
             }
         });
     });
 
     tcpConnection.on('error', ({ code }) => {
-        console.log('tcp error outside');
+        console.log(`${getCurrentDateTime()}: ${id} tcp error outside ${code}`);
         ws.close(4501, `origin tcp connect failed ${code}`);
     })
 });
