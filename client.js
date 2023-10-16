@@ -16,7 +16,7 @@ server.on('connection', (socket) => {
     socket.setKeepAlive(true);
 
     // send to buffer until websocket is connected
-    const buffer = [];
+    let buffer = [];
     const ws = new WebSocket(HOST);
 
     ws.on('open', () => {
