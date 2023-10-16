@@ -13,6 +13,7 @@ const wss = new WebSocket.Server({
 
 // on WS connect -> open TCP connection
 wss.on('connection', (ws, req) => {
+    console.log(req.headers);
     // create tcp conn, keepalive true
     const tcpConnection = new net.Socket();
     tcpConnection.setKeepAlive(true);
