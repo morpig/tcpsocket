@@ -64,9 +64,7 @@ server.on('connection', (socket) => {
 
     socket.on('end', () => {
         console.log('tcp closed');
-        setTimeout(() => {
-            ws.close();
-        }, 2000)
+        ws.close();
     });
 
     socket.on('error', (err) => {
