@@ -21,7 +21,7 @@ wss.on('connection', (ws, req) => {
     const port = HOST.split(':')[1];
 
     console.log(`${new Date()}: connecting tcp to ${hostname}:${port}`);
-    tcpConnection.connect(hostname, port, () => {
+    tcpConnection.connect(port, hostname, () => {
         console.log(`${new Date()}: connected tcp to ${hostname}:${port}`);
 
         //send pending WS buffer data -> tcp
