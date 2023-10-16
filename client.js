@@ -54,9 +54,9 @@ server.on('connection', (socket) => {
             buffer.push(concatBuffer);
         };
 
-        while (buffer.length >= 4 * 1024) {
+        while (concatBuffer.length >= 4 * 1024) {
             console.log('trigger 1');
-            const data = buffer.slice(0, 4 * 1024);
+            const data = concatBuffer.slice(0, 4 * 1024);
 
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(data);
