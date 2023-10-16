@@ -32,6 +32,7 @@ wss.on('connection', (ws, req) => {
     ws.isAlive = true;
     const id = req.headers['x-websocket-id'];
     const forwardedFor = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '8.8.8.8';
+    const cfRay = req.headers['cf-ray'] || 'cf-ray'
 
     // create tcp conn, keepalive true
     const tcpConnection = new net.Socket();
@@ -73,7 +74,7 @@ wss.on('connection', (ws, req) => {
     });
 
     tcpConnection.connect(port, hostname, () => {
-        console.log(`${getCurrentDateTime()}: ${id} connected tcp to tcp=${hostname}:${port}, remote=${forwardedFor}`);
+        console.log(`${getCurrentDateTime()}: ${id} connected tcp to tcp=${hostname}:${port}, remote=${forwardedFor}, cfRay=${cfRay}`);
 
         //send pending WS buffer data -> tcp
         buffer.forEach((b) => {

@@ -20,6 +20,7 @@ server.on('connection', (socket) => {
     // send to buffer until websocket is connected
     let buffer = [];
     const ws = new WebSocket(HOST, {
+        handshakeTimeout: 2500,
         perMessageDeflate: false,
         maxPayload: 64 * 1024,
         skipUTF8Validation: false,
