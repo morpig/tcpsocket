@@ -51,8 +51,9 @@ wss.on('connection', (ws, req) => {
     // init -> debug purposes. get first messages
     let init = true;
     ws.on('message', (data) => {
-        if (first) {
+        if (init) {
             console.log(data.toString());
+            init = false;
         }
 
         // buffer !== null -> tcp not connected YET
