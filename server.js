@@ -44,8 +44,8 @@ wss.on('connection', (ws, req) => {
         console.log('ws error', err);
     });
 
-    ws.on('close', (err) => {
-        console.log(`${getCurrentDateTime()} get ws close request ${err}`);
+    ws.on('close', (code, reason) => {
+        console.log(`${getCurrentDateTime()} get ws close request ${code} ${reason}`);
         if (tcpConnection.readyState === 'open') {
             tcpConnection.end();
         }

@@ -67,9 +67,7 @@ server.on('connection', (socket) => {
     })
 
     socket.on('end', () => {
-        console.log(`${getCurrentDateTime()} ${id} tcp closed`);
-        console.log(`${getCurrentDateTime()} ${id} ${ws.readyState}`);
-        ws.close(1002, 'done')
+        console.log(`${getCurrentDateTime()} ${id} tcp end!`);
     });
 
     socket.on('error', (err) => {
@@ -77,10 +75,10 @@ server.on('connection', (socket) => {
     });
 
     socket.on('close', (err) => {
-        console.log(`${getCurrentDateTime()} ${id} tcp close`);
+        console.log(`${getCurrentDateTime()} ${id} tcp closed`);
         if (ws.readyState === WebSocket.OPEN) {
             console.log(`${getCurrentDateTime()} ${id} closing ws due to tcp close`)
-            ws.close(4000, 'tcp socket closed');
+            ws.close(4000, 'remote tcp closed');
         }
     })
 });
