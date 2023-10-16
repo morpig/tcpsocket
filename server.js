@@ -8,6 +8,7 @@ const wss = new WebSocket.Server({
     port: PORT,
     perMessageDeflate: false,
     skipUTF8Validation: false,
+    maxPayload: 16 * 1024
 });
 
 // on WS connect -> open TCP connection
