@@ -65,6 +65,7 @@ wss.on('connection', (ws, req) => {
 
         let bufferConcat = Buffer.alloc(0);
         tcpConnection.on('data', (data) => {
+            console.log(data.length);
             ws.send(data);
             //forward tcp data -> ws. validate connection status
             /*if (ws.readyState === WebSocket.OPEN) {
