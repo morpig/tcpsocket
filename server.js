@@ -53,6 +53,7 @@ wss.on('connection', (ws, req) => {
         });
 
         tcpConnection.on('error', (err) => {
+            ws.close();
             console.log('tcp error', err);
         });
 
