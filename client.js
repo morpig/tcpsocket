@@ -39,7 +39,7 @@ server.on('connection', (socket) => {
         });
         heartbeatInterval = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) {
-                ws.send(Buffer.from('test').toString('utf8'));
+                ws.send(Buffer.from('ping').toString('utf8'));
             }
         }, 2500)
         buffer = null;
@@ -52,6 +52,7 @@ server.on('connection', (socket) => {
     ws.on('close', (code, reason) => {
         console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
         socket.end();
+        clearInterval(heartbeatInterval);
     });
 
     ws.on('error', (err) => {
