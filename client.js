@@ -41,11 +41,15 @@ server.on('connection', (socket) => {
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(Buffer.from('ping').toString('utf8'));
             }
-        }, 5000)
+        }, 2500)
         buffer = null;
     });
 
     ws.on('message', (data) => {
+        if (data.toString() === 'ping') {
+            return;
+        }
+
         socket.write(data);
     });
 

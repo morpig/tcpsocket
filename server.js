@@ -54,12 +54,15 @@ wss.on('connection', (ws, req) => {
     ws.on('message', (data) => {
         connectionData["tcp_write_time"] = getCurrentDateTime();
         connectionData["tcp_write"] = data.length;
-        
+
         if (init) {
             init = false;
         }
 
         if (data.toString() === 'ping') {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(Buffer.from('ping').toString('utf8'));
+            }
             return;
         }
 
