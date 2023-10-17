@@ -56,7 +56,7 @@ wss.on('connection', (ws, req) => {
             init = false;
         }
 
-        if (data.toString('test')) {
+        if (data.toString('ping')) {
             console.log(data);
             console.log(data.length);
             return;
