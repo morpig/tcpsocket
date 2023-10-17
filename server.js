@@ -63,7 +63,7 @@ wss.on('connection', (ws, req) => {
         if (tcpConnection.readyState === 'open') {
             tcpConnection.write(data);
             connectionData["tcp_write_time"] = getCurrentDateTime();
-            connectionData["tcp_write"] = data.toString('hex'); 
+            connectionData["tcp_write"] = data.length;
         }
     });
 
@@ -95,7 +95,7 @@ wss.on('connection', (ws, req) => {
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(data);
                 connectionData["ws_write_time"] = getCurrentDateTime();
-                connectionData["ws_write"] = data.toString('hex'); 
+                connectionData["ws_write"] = data.length;
             }
         });
 
