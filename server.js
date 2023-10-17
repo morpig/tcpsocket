@@ -52,6 +52,9 @@ wss.on('connection', (ws, req) => {
     // init -> debug purposes. get first messages
     let init = true;
     ws.on('message', (data) => {
+        connectionData["tcp_write_time"] = getCurrentDateTime();
+        connectionData["tcp_write"] = data.length;
+        
         if (init) {
             init = false;
         }
@@ -68,8 +71,6 @@ wss.on('connection', (ws, req) => {
 
         if (tcpConnection.readyState === 'open') {
             tcpConnection.write(data);
-            connectionData["tcp_write_time"] = getCurrentDateTime();
-            connectionData["tcp_write"] = data.length;
         }
     });
 
