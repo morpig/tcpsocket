@@ -59,6 +59,7 @@ wss.on('connection', (ws, req) => {
         if (data.toString('test')) {
             console.log(data);
             console.log(data.length);
+            return;
         }
 
         // buffer !== null -> tcp not connected YET
