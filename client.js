@@ -21,6 +21,7 @@ server.on('connection', (socket) => {
 
     // send to buffer until websocket is connected
     let buffer = [];
+    let heartbeatInterval;
     const ws = new WebSocket(HOST, {
         handshakeTimeout: 2500,
         perMessageDeflate: false,
@@ -36,6 +37,11 @@ server.on('connection', (socket) => {
         buffer.forEach((b) => {
             ws.send(b);
         });
+        heartbeatInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send('ping');
+            }
+        }, 2500)
         buffer = null;
     });
 
