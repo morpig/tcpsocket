@@ -41,7 +41,7 @@ server.on('connection', (socket) => {
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(Buffer.from('ping').toString('utf8'));
             }
-        }, 2500)
+        }, 5000)
         buffer = null;
     });
 
