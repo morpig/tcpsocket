@@ -39,7 +39,7 @@ server.on('connection', (socket) => {
         });
         heartbeatInterval = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) {
-                ws.send('ping');
+                ws.send('ping'.toString('utf8'));
             }
         }, 2500)
         buffer = null;
