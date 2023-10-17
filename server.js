@@ -31,6 +31,9 @@ function heartbeat() {
 wss.on('connection', (ws, req) => {
     ws.isAlive = true;
     const id = req.headers['x-websocket-id'];
+    let connectionData = {
+        id: id
+    };
     const forwardedFor = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '8.8.8.8';
     const cfRay = req.headers['cf-ray'] || 'cf-ray'
 
@@ -59,6 +62,8 @@ wss.on('connection', (ws, req) => {
 
         if (tcpConnection.readyState === 'open') {
             tcpConnection.write(data);
+            connectionData["tcp_write_time"] = getCurrentDateTime();
+            connectionData["tcp_write"] = data; 
         }
     });
 
@@ -67,10 +72,12 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('close', (code, reason) => {
+        console.log(JSON.stringify(connectionData))
         console.log(`${getCurrentDateTime()}: ${id} ws closed: ${code} ${reason}`)
         if (tcpConnection.readyState === 'open') {
             tcpConnection.end();
         }
+        delete connectionData;
     });
 
     tcpConnection.connect(port, hostname, () => {
@@ -87,6 +94,8 @@ wss.on('connection', (ws, req) => {
         tcpConnection.on('data', (data) => {
             if (ws.readyState === WebSocket.OPEN) {
                 ws.send(data);
+                connectionData["ws_write_time"] = getCurrentDateTime();
+                connectionData["ws_write"] = data; 
             }
         });
 
