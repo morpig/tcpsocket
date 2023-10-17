@@ -31,11 +31,13 @@ function heartbeat() {
 wss.on('connection', (ws, req) => {
     ws.isAlive = true;
     const id = req.headers['x-websocket-id'];
-    let connectionData = {
-        id: id
-    };
     const forwardedFor = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '8.8.8.8';
-    const cfRay = req.headers['cf-ray'] || 'cf-ray'
+    const cfRay = req.headers['cf-ray'] || 'cf-ray';
+
+    let connectionData = {
+        id: id,
+        cfRay: cfRay
+    };
 
     // create tcp conn, keepalive true
     const tcpConnection = new net.Socket();
