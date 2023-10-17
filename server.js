@@ -103,9 +103,11 @@ wss.on('connection', (ws, req) => {
 
         tcpConnection.on('data', (data) => {
             if (ws.readyState === WebSocket.OPEN) {
-                ws.send(data);
-                connectionData["ws_write_time"] = getCurrentDateTime();
-                connectionData["ws_write"] = data.length;
+                if (!ws.send(data)) {
+                    connectionData["ws_write_time"] = getCurrentDateTime();
+                    connectionData["ws_write"] = data.length;
+                    connectionData["ws_write_buffer"] = ws.bufferedAmount;
+                }
             }
         });
 
