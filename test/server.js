@@ -7,8 +7,8 @@ const WebSocket = require('ws');
 const { PORT, HOST } = process.env;
 
 const server = createServer({
-    cert: readFileSync('./ssl/cert.pem'),
-    key: readFileSync('./ssl/privkey.pem')
+    cert: readFileSync('../ssl/cert.pem'),
+    key: readFileSync('../ssl/privkey.pem')
 }, (req, res) => {
     res.writeHead(200, {
         'Content-Type': 'application/json'
@@ -38,7 +38,7 @@ wss.on('connection', (ws, req) => {
         id: id,
         cfRay: cfRay
     };
-    
+
     let buffer = [];
     const hostname = HOST.split(':')[0];
     const port = HOST.split(':')[1];
