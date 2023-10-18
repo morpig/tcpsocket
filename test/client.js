@@ -38,13 +38,10 @@ function openConnection(id) {
         if (data.toString() === 'ping') {
             return;
         }
-
-        socket.write(data);
     });
 
     ws.on('close', (code, reason) => {
         console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
-        socket.end();
         clearInterval(heartbeatInterval);
     });
 
