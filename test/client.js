@@ -12,6 +12,7 @@ function openConnection(id) {
     let buffer = [];
     let heartbeatInterval;
     const ws = new WebSocket(HOST, {
+        rejectUnauthorized: true,
         handshakeTimeout: 2500,
         perMessageDeflate: false,
         maxPayload: 64 * 1024,

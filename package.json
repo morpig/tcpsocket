@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "bufferutil": "^4.0.8",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.31.0",
     "ws": "^8.14.2"
   }
 }
