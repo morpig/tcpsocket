@@ -35,7 +35,7 @@ uws.SSLApp({
         console.log(`${getCurrentDateTime()}: ${ws.id} ws drain: ${ws.getBufferedAmount()}`)
     },
     close: (ws, code, message) => {
-        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: ${code} ${Buffer.from(message).toString('utf-8')}`)
+        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: ${code} ${Buffer.from(message).toString('utf-8')} ${ws.cfRay}`)
     }
 }).get('/*', (res, req) => { // opposite!
     res.writeStatus('200 OK').end('OK');
