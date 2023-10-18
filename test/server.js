@@ -34,13 +34,14 @@ wss.on('connection', (ws, req) => {
     const forwardedFor = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '8.8.8.8';
     const cfRay = req.headers['cf-ray'] || 'cf-ray';
 
+    console.log(`${getCurrentDateTime()}: ${id} connected to ws, remote=${forwardedFor}, cfRay=${cfRay}`);
+
     let connectionData = {
         id: id,
         cfRay: cfRay
     };
 
     let buffer = [];
-    
     ws.on('pong', heartbeat);
 
     // init -> debug purposes. get first messages
