@@ -15,7 +15,7 @@ uws.SSLApp({
             {
                 'cfRay': req.getHeader('cf-ray'),
                 'forwardedFor': req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8',
-                id: req.getHeader('x-websocket-id')
+                id: req.getHeader('x-websocket-id'),
             },
             req.getHeader('sec-websocket-key'),
             req.getHeader('sec-websocket-protocol'),
@@ -25,6 +25,7 @@ uws.SSLApp({
     },
     open: (ws) => {
         // on websocket open event
+        ws.rawIp = Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8');
         console.log(`${getCurrentDateTime()}: ${ws.id} connected to ws, remote=${ws.forwardedFor}, cfRay=${ws.cfRay}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
     },
     message: (ws, message, isBinary) => {
@@ -40,7 +41,7 @@ uws.SSLApp({
     },
     close: (ws, code, message) => {
         // on websocket close event
-        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: ${code} ${Buffer.from(message).toString('utf-8')} ${ws.cfRay} ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`)
+        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: ${code} ${Buffer.from(message).toString('utf-8')} ${ws.cfRay} ${ws.rawIp}`)
     }
 }).get('/*', (res, req) => { // opposite!
     res.writeStatus('200 OK').end('OK');
