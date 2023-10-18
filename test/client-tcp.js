@@ -45,6 +45,7 @@ function openConnection(id) {
     })
     
     driver.on('close', function({ code, reason }) {
+        console.log(`${getCurrentDateTime()}: ${id} close`)
         console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
     })
     
