@@ -14,6 +14,7 @@ function openConnection(id) {
     const driver = websocket.client(`wss://${HOST}`);
     driver.setHeader('host', HOST);
     driver.setHeader('accept', '*/*');
+    driver.setHeader('x-websocket-id', id);
     
     const tcp = tls.connect({
         port: '443',
