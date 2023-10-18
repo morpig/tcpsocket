@@ -27,6 +27,14 @@ function openConnection(id) {
     tcp.on('connect', function() {
       driver.start();
     });
+
+    tcp.on('error', function(error) {
+        console.log(`${getCurrentDateTime()}: ${id} tcp LL error: ${error}`);
+    });
+
+    tcp.on('close', function(hasError) {
+        console.log(`${getCurrentDateTime()}: ${id} tcp LL closed: ${hasError}`);
+    });
      
     driver.on('open', function(event) {
         console.log(`${getCurrentDateTime()}: ${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`);
