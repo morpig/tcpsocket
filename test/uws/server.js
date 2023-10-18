@@ -10,6 +10,7 @@ uws.SSLApp({
 }).ws('/*', {
     sendPingsAutomatically: false,
     upgrade: (res, req, context) => {
+        // server received upgrade request -> upgrade request to websocket
         res.upgrade(
             {
                 'cfRay': req.getHeader('cf-ray'),
@@ -23,19 +24,23 @@ uws.SSLApp({
         );
     },
     open: (ws) => {
+        // on websocket open event
         console.log(`${getCurrentDateTime()}: ${ws.id} connected to ws, remote=${ws.forwardedFor}, cfRay=${ws.cfRay}`);
     },
     message: (ws, message, isBinary) => {
+        // on websocket receive msg event
         const buffer = Buffer.from(message);
         if (buffer.toString('utf-8') === 'ping') {
             ws.send(Buffer.from('ping'))
         }
     },
     drain: (ws) => {
+        // ws drain backpressure event
         console.log(`${getCurrentDateTime()}: ${ws.id} ws drain: ${ws.getBufferedAmount()}`)
     },
     close: (ws, code, message) => {
-        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: ${code} ${Buffer.from(message).toString('utf-8')} ${ws.cfRay}`)
+        // on websocket close event
+        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: ${code} ${Buffer.from(message).toString('utf-8')} ${ws.cfRay} ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`)
     }
 }).get('/*', (res, req) => { // opposite!
     res.writeStatus('200 OK').end('OK');
