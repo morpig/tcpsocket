@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const { PORT, HOST } = process.env;
 
 function openConnection(id) {
+    const tcpOpen = performance.now();
     console.log(`${getCurrentDateTime()}: ${id} open ws req`);
 
     // send to buffer until websocket is connected
