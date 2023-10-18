@@ -25,7 +25,7 @@ uws.SSLApp({
     },
     open: (ws) => {
         // on websocket open event
-        console.log(`${getCurrentDateTime()}: ${ws.id} connected to ws, remote=${ws.forwardedFor}, cfRay=${ws.cfRay}`);
+        console.log(`${getCurrentDateTime()}: ${ws.id} connected to ws, remote=${ws.forwardedFor}, cfRay=${ws.cfRay}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
     },
     message: (ws, message, isBinary) => {
         // on websocket receive msg event
