@@ -40,9 +40,7 @@ wss.on('connection', (ws, req) => {
     };
 
     let buffer = [];
-    const hostname = HOST.split(':')[0];
-    const port = HOST.split(':')[1];
-
+    
     ws.on('pong', heartbeat);
 
     // init -> debug purposes. get first messages
