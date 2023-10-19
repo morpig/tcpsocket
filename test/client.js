@@ -18,7 +18,8 @@ function openConnection(id) {
         maxPayload: 64 * 1024,
         skipUTF8Validation: false,
         headers: {
-            'x-websocket-id': id
+            'x-websocket-id': id,
+            'sec-websocket-version': '13'
         }
     });
 
