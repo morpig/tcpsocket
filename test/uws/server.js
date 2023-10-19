@@ -10,7 +10,7 @@ uws.SSLApp({
 }).ws('/*', {
     sendPingsAutomatically: false,
     upgrade: (res, req, context) => {
-        console.log(`${getCurrentDateTime}: upgrade ${req.getHeader('sec-websocket-extensions')} ${req.getHeader('sec-websocket-protocol')} ${req.getHeader('sec-websocket-key')}`)
+        console.log(`${getCurrentDateTime()}: upgrade extensions=${req.getHeader('sec-websocket-extensions')} protocol=${req.getHeader('sec-websocket-protocol')} key=${req.getHeader('sec-websocket-key')}`)
         // server received upgrade request -> upgrade request to websocket
         res.upgrade(
             {
