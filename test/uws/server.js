@@ -16,7 +16,7 @@ uws.SSLApp({
             {
                 'cfRay': req.getHeader('cf-ray'),
                 'forwardedFor': req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8',
-                id: req.getHeader('x-websocket-id'),
+                id: req.getHeader('x-websocket-id') || req.getQuery('id'),
             },
             req.getHeader('sec-websocket-key'),
             req.getHeader('sec-websocket-protocol'),
