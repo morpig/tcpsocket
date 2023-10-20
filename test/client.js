@@ -23,8 +23,12 @@ function openConnection(id) {
         }
     });
 
+    ws.on('upgrade', (res) => {
+        ws.cfRay = res.headers['cf-ray'] || `cfRay-${id}`
+    });
+
     ws.on('open', () => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket connected, cfRay=${ws.cfRay}, time=${Math.round(performance.now() - tcpOpen)}ms`);
         buffer.forEach((b) => {
             ws.send(b);
         });
@@ -43,7 +47,7 @@ function openConnection(id) {
     });
 
     ws.on('close', (code, reason) => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket closed: code=${code}, reason=${reason}, cfRay=${ws.cfRay}`);
         clearInterval(heartbeatInterval);
     });
 
