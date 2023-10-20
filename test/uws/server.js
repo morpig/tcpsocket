@@ -15,7 +15,7 @@ const app = uws.SSLApp({
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
         const cfRay = req.getHeader('cf-ray') || 'cfRay';
 
-        console.log(`${getCurrentDateTime()}: ${id} ws upgrade req: cfRay=${cfRay}, remote=${forwardedFor}, extensions=${req.getHeader('sec-websocket-extensions')}, protocol=${req.getHeader('sec-websocket-protocol')}, key=${req.getHeader('sec-websocket-key')}, version=${req.getHeader('sec-websocket-version')}`)
+        console.log(`${getCurrentDateTime()}: ${id} ws upgrade: cfRay=${cfRay}, remote=${forwardedFor}, extensions=${req.getHeader('sec-websocket-extensions')}, protocol=${req.getHeader('sec-websocket-protocol')}, key=${req.getHeader('sec-websocket-key')}, version=${req.getHeader('sec-websocket-version')}`)
         // server received upgrade request -> upgrade request to websocket
         res.upgrade(
             {
