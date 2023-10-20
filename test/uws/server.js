@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const { PORT } = process.env;
 
-uws.SSLApp({
+const app = uws.SSLApp({
     cert_file_name: `../../ssl/cert.pem`,
     key_file_name: `../../ssl/privkey.pem`
     
@@ -26,6 +26,7 @@ uws.SSLApp({
     },
     open: (ws) => {
         // on websocket open event
+        ws.subscribe('cfpingtest');
         ws.rawIp = Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8');
         console.log(`${getCurrentDateTime()}: ${ws.id} connected to ws, remote=${ws.forwardedFor}, cfRay=${ws.cfRay}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
     },
@@ -51,6 +52,10 @@ uws.SSLApp({
         console.log(`Listening to port ${PORT}`)
     }
 });
+
+setInterval(() => {
+    app.publish('cfpingtest', 'ping2');
+}, 5000);
 
 function getCurrentDateTime() {
     const now = new Date();
