@@ -8,6 +8,7 @@ const app = uws.SSLApp({
     key_file_name: `../../ssl/privkey.pem`
     
 }).ws('/*', {
+    idleTimeout: 0,
     sendPingsAutomatically: false,
     upgrade: (res, req, context) => {
         console.log(`${getCurrentDateTime()}: upgrade extensions=${req.getHeader('sec-websocket-extensions')} protocol=${req.getHeader('sec-websocket-protocol')} key=${req.getHeader('sec-websocket-key')} version=${req.getHeader('sec-websocket-version')}`)
