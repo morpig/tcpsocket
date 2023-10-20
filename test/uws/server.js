@@ -27,6 +27,7 @@ const app = uws.SSLApp({
     open: (ws) => {
         // on websocket open event
         ws.subscribe('cfpingtest');
+        ws.send(Buffer.from('connect-ping'));
         ws.rawIp = Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8');
         console.log(`${getCurrentDateTime()}: ${ws.id} connected to ws, remote=${ws.forwardedFor}, cfRay=${ws.cfRay}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
     },
