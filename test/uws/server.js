@@ -43,10 +43,6 @@ const app = uws.SSLApp({
             ws.send(Buffer.from('ping'))
         }
     },
-    drain: (ws) => {
-        // ws drain backpressure event
-        console.log(`${getCurrentDateTime()}: ${ws.id} ws drain: ${ws.getBufferedAmount()}`)
-    },
     close: (ws, code, message) => {
         // on websocket close event
         console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}`)
