@@ -59,6 +59,13 @@ const app = uws.SSLApp({
         ws.tcpConnection.on('data', (data) => {
             if (ws.isOpen) {
                 const result = ws.send(data, true, false);
+
+                if (result === 0) {
+                    console.log(`${getCurrentDateTime()}: ${ws.id} BACKPRESSURED! pausing tcp stream`);
+                    ws.tcpConnection.pause();
+                    return;
+                }
+
                 if (result != 1) {
                     console.log(`${getCurrentDateTime()}: ${ws.id} ws send status: ${result}`);
                 }
@@ -94,7 +101,8 @@ const app = uws.SSLApp({
         }
     },
     drain: (ws) => {
-        console.log(`${getCurrentDateTime()}: ${ws.id} drain done`)
+        ws.tcpConnection.resume();
+        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, resuming tcp`);
     },
     close: (ws, code, message) => {
         ws.isOpen = false;
