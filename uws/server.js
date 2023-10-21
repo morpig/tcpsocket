@@ -4,6 +4,7 @@ const net = require('net');
 const { HOST, PORT } = process.env;
 
 let buffers = {}
+let backPressure = {};
 
 const app = uws.SSLApp({
     cert_file_name: `../ssl/cert.pem`,
@@ -52,22 +53,30 @@ const app = uws.SSLApp({
             ws.tcpConnection.write(Buffer.from(buffers[ws.id]));
             buffers[ws.id] = null;
 
+            //ws.isBackpressured = true;
             console.log(`${getCurrentDateTime()}: ${ws.id} ws+tcp open: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
         });
 
 
         ws.tcpConnection.on('data', (data) => {
             if (ws.isOpen) {
-                const result = ws.send(data, true, false);
+                if (!ws.isBackpressured) {
+                    const result = ws.send(data, true, false);
 
-                if (result === 0) {
-                    console.log(`${getCurrentDateTime()}: ${ws.id} BACKPRESSURED! pausing tcp stream`);
-                    ws.tcpConnection.pause();
-                    return;
-                }
-
-                if (result != 1) {
-                    console.log(`${getCurrentDateTime()}: ${ws.id} ws send status: ${result}`);
+                    if (result === 0) {
+                        console.log(`${getCurrentDateTime()}: ${ws.id} BACKPRESSURED! queueing tcp stream`);
+                        ws.isBackpressured = true;
+                        return;
+                    }
+    
+                    if (result != 1) {
+                        console.log(`${getCurrentDateTime()}: ${ws.id} ws send status: ${result}`);
+                    }
+                } else {
+                    if (!backPressure[ws.id]) {
+                        backPressure[ws.id] = []
+                    }
+                    backPressure[ws.id].push(data);
                 }
             }
         });
@@ -101,11 +110,19 @@ const app = uws.SSLApp({
         }
     },
     drain: (ws) => {
-        ws.tcpConnection.resume();
-        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, resuming tcp`);
+        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, sending pending data`);
+        if (ws.isBackpressured && backPressure[ws.id]) {
+            backPressure[ws.id].forEach((b) => {
+                ws.send(b, true, false);
+            });
+            ws.isBackpressured = false;
+            delete backPressure[ws.id];
+        } 
     },
     close: (ws, code, message) => {
         ws.isOpen = false;
+        delete backPressure[ws.id];
+        delete buffers[ws.id];
         // on websocket close event
         if (ws.tcpConnection.readyState === 'open') {
             ws.tcpConnection.end();
