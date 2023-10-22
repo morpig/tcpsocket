@@ -64,13 +64,13 @@ const app = uws.SSLApp({
                     const result = ws.send(data, true, false);
 
                     if (result === 0) {
-                        console.log(`${getCurrentDateTime()}: ${ws.id} BACKPRESSURED! queueing tcp stream`);
+                        console.log(`${getCurrentDateTime()}: ${ws.id} BACKPRESSURED! queueing tcp stream ${ws.getBufferedAmount()}`);
                         ws.isBackpressured = true;
                         return;
                     }
     
                     if (result != 1) {
-                        console.log(`${getCurrentDateTime()}: ${ws.id} ws send status: ${result}`);
+                        console.log(`${getCurrentDateTime()}: ${ws.id} ws send status: ${result} ${ws.getBufferedAmount()}`);
                     }
                 } else {
                     if (!backPressure[ws.id]) {
