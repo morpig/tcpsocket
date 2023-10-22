@@ -14,7 +14,6 @@ const app = uws.SSLApp({
     idleTimeout: 0,
     maxLifetime: 0,
     sendPingsAutomatically: false,
-    maxBackpressure: 1,
     upgrade: (res, req, context) => {
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
