@@ -62,7 +62,7 @@ const app = uws.SSLApp({
                 if (!ws.isBackpressured) {
                     const result = ws.send(data, true, false);
 
-                    if (result === 0) {
+                    if ((result === 0)) {
                         console.log(`${getCurrentDateTime()}: ${ws.id} BACKPRESSURED! queueing tcp stream ${ws.getBufferedAmount()}`);
                         ws.isBackpressured = true;
                         return;
@@ -111,11 +111,17 @@ const app = uws.SSLApp({
     drain: (ws) => {
         console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, sending pending data`);
         if (ws.isBackpressured && backPressure[ws.id]) {
-            backPressure[ws.id].forEach((b) => {
+
+            while (backPressure[ws.id].length > 0 && !ws.getBufferedAmount()) {
+                const b = backPressure[ws.id].shift();
                 ws.send(b, true, false);
-            });
-            ws.isBackpressured = false;
-            delete backPressure[ws.id];
+            }
+
+            if (backPressure[ws.id].length === 0) {
+                ws.isBackpressured = false;
+                delete backPressure[ws.id];
+                console.log(`${getCurrentDateTime()}: ${ws.id} backpressure2 drain done`);
+            }
         } 
     },
     close: (ws, code, message) => {
