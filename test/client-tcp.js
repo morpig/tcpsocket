@@ -12,7 +12,7 @@ function openConnection(id) {
     let heartbeatInterval;
 
     const driver = websocket.client(`wss://${HOST}`);
-    driver.setHeader('host', HOST);
+    driver.setHeader('host', PORT);
     driver.setHeader('accept', '*/*');
     driver.setHeader('x-websocket-id', id);
     
