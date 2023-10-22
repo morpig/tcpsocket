@@ -12,12 +12,12 @@ function openConnection(id) {
     let heartbeatInterval;
 
     const driver = websocket.client(`wss://${HOST}`);
-    driver.setHeader('host', PORT);
+    driver.setHeader('host', HOST);
     driver.setHeader('accept', '*/*');
     driver.setHeader('x-websocket-id', id);
     
     const tcp = tls.connect({
-        port: '443',
+        port: PORT,
         host: HOST,
         servername: HOST
     });
