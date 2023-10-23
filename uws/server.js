@@ -62,7 +62,7 @@ const app = uws.SSLApp({
             if (ws.isOpen) {
                 const result = ws.send(data, true, false);
                 if (result === 0 && !ws.isBackpressured) {
-                    console.log(`${getCurrentDateTime()}: ${ws.id} connection backpressured cfRay=${ws.cfRay}`);
+                    console.log(`${getCurrentDateTime()}: ${ws.id} connection backpressured: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
                     ws.isBackpressured = true;
                 }
                 /*
@@ -122,7 +122,7 @@ const app = uws.SSLApp({
         }
     },
     drain: (ws) => {
-        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, sending pending data`);
+        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, sending pending data. cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
         if (ws.isBackpressured) {
             ws.isBackpressured = false;
         }
