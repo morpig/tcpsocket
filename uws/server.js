@@ -114,8 +114,8 @@ const app = uws.SSLApp({
 
             while (backPressure[ws.id].length > 0 && !ws.getBufferedAmount()) {
                 const b = backPressure[ws.id].shift();
-                ws.send(b, true, false);
-                console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining`);
+                const result = ws.send(b, true, false);
+                console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${b}, size=${backPressure[ws.id].length}`);
             }
 
             if (backPressure[ws.id].length === 0) {
