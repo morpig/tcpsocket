@@ -34,7 +34,7 @@ server.on('connection', (socket) => {
     const tcp = tls.connect({
         host: hostname,
         port: port,
-        serverName: HOST
+        serverName: hostname
     });
 
     tcp.pipe(driver.io).pipe(tcp);
