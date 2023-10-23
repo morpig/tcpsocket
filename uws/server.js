@@ -13,6 +13,7 @@ const app = uws.SSLApp({
 }).ws('/*', {
     idleTimeout: 0,
     maxLifetime: 0,
+    maxBackpressure: 64 * 1024,
     sendPingsAutomatically: false,
     upgrade: (res, req, context) => {
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
@@ -62,9 +63,15 @@ const app = uws.SSLApp({
                 if (!ws.isBackpressured) {
                     const result = ws.send(data, true, false);
 
-                    if ((result === 0)) {
-                        console.log(`${getCurrentDateTime()}: ${ws.id} BACKPRESSURED! queueing tcp stream ${ws.getBufferedAmount()}`);
+                    if ((result === 2)) {
+                        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure full! queueing tcp stream ${ws.getBufferedAmount()}`);
                         ws.isBackpressured = true;
+
+                        if (!backPressure[ws.id]) {
+                            backPressure[ws.id] = []
+                        }
+                        backPressure[ws.id].push(data);
+
                         return;
                     }
     
@@ -111,20 +118,16 @@ const app = uws.SSLApp({
     drain: (ws) => {
         console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, sending pending data`);
         if (ws.isBackpressured && backPressure[ws.id]) {
-
-            /*
-                        while (backPressure[ws.id].length > 0) {
-                setTimeout(() => {
-                    if ((ws.getBufferedAmount() < 1024) && (ws.isOpen)) {
-                        const b = backPressure[ws.id][0];
-                        const result = ws.send(backPressure[ws.id], true, false);
-                        if (result == 1) {
-                            backPressure[ws.id].shift();
-                        }
-                        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${result}, size=${backPressure[ws.id].length}, bufferedAmount=${ws.getBufferedAmount()}`);
+             while (backPressure[ws.id].length > 0) {
+                if ((ws.getBufferedAmount() < 1024) && (ws.isOpen)) {
+                    const b = backPressure[ws.id][0];
+                    const result = ws.send(backPressure[ws.id], true, false);
+                    if (result == 1) {
+                        backPressure[ws.id].shift();
                     }
-                }, backPressure[ws.id].length * 10);
-            }*/
+                    console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${result}, size=${backPressure[ws.id].length}, bufferedAmount=${ws.getBufferedAmount()}`);
+                }
+            }
 
             if (backPressure[ws.id].length === 0) {
                 ws.isBackpressured = false;
