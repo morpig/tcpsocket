@@ -13,7 +13,7 @@ const app = uws.SSLApp({
 }).ws('/*', {
     idleTimeout: 0,
     maxLifetime: 0,
-    maxBackpressure: 64 * 1024,
+    maxBackpressure: 0,
     sendPingsAutomatically: false,
     upgrade: (res, req, context) => {
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
