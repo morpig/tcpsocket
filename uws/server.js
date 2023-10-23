@@ -121,7 +121,7 @@ const app = uws.SSLApp({
              while (backPressure[ws.id].length > 0) {
                 if ((ws.getBufferedAmount() < 1024)) {
                     const b = backPressure[ws.id][0];
-                    const result = ws.send(backPressure[ws.id], true, false);
+                    const result = ws.send(b, true, false);
                     if (result == 1) {
                         backPressure[ws.id].shift();
                     }
