@@ -119,7 +119,7 @@ const app = uws.SSLApp({
         console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, sending pending data`);
         if (ws.isBackpressured && backPressure[ws.id]) {
              while (backPressure[ws.id].length > 0) {
-                if ((ws.getBufferedAmount() < 1024) && (ws.isOpen)) {
+                if ((ws.getBufferedAmount() < 1024)) {
                     const b = backPressure[ws.id][0];
                     const result = ws.send(backPressure[ws.id], true, false);
                     if (result == 1) {
