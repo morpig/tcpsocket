@@ -95,7 +95,8 @@ server.on('connection', (socket) => {
             return;
         }
 
-        driver.binary(chunk)
+        const result = driver.binary(chunk);
+        console.log(`${getCurrentDateTime()}: ${id} push binary ${result}`)
     });
 
     socket.on('end', () => {
