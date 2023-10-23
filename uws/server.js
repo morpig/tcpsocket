@@ -112,7 +112,8 @@ const app = uws.SSLApp({
         console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done, sending pending data`);
         if (ws.isBackpressured && backPressure[ws.id]) {
 
-            while (backPressure[ws.id].length > 0) {
+            /*
+                        while (backPressure[ws.id].length > 0) {
                 setTimeout(() => {
                     if ((ws.getBufferedAmount() < 1024) && (ws.isOpen)) {
                         const b = backPressure[ws.id][0];
@@ -123,7 +124,7 @@ const app = uws.SSLApp({
                         console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${result}, size=${backPressure[ws.id].length}, bufferedAmount=${ws.getBufferedAmount()}`);
                     }
                 }, backPressure[ws.id].length * 10);
-            }
+            }*/
 
             if (backPressure[ws.id].length === 0) {
                 ws.isBackpressured = false;
