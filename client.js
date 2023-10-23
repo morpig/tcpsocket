@@ -55,7 +55,7 @@ server.on('connection', (socket) => {
 
     ws.on('close', (code, reason) => {
         console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
-        socket.end();
+        socket.destroy();
         clearInterval(heartbeatInterval);
     });
 
