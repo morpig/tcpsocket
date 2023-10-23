@@ -50,7 +50,10 @@ const app = uws.SSLApp({
         ws.tcpConnection.setKeepAlive(true);
 
         ws.tcpConnection.connect(port, hostname, () => {
-            ws.tcpConnection.write(Buffer.from(buffers[ws.id]));
+            buffers[ws.id].forEach((b) => {
+                ws.tcpConnection.write(Buffer.from(b, 'base64'))
+            })
+            //ws.tcpConnection.write(Buffer.from(buffers[ws.id]));
             buffers[ws.id] = null;
 
             //ws.isBackpressured = true;
@@ -113,7 +116,7 @@ const app = uws.SSLApp({
         }
 
         if (buffers[ws.id] !== null) {
-            buffers[ws.id].push(...buffer);
+            buffers[ws.id].push(Buffer.from(message).toString('base64'));
             return;
         }
 
