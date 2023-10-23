@@ -34,7 +34,7 @@ server.on('connection', (socket) => {
     const tcp = tls.connect({
         host: hostname,
         port: port,
-        serverName: hostname
+        servername: hostname
     });
 
     tcp.pipe(driver.io).pipe(tcp);
@@ -44,6 +44,7 @@ server.on('connection', (socket) => {
     });
 
     tcp.on('error', (err) => {
+        console.log(err);
         console.log(`${getCurrentDateTime()}: ${id} tcp LL error: ${err}`);
     });
 
