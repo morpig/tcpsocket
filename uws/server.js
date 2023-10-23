@@ -14,6 +14,7 @@ const app = uws.SSLApp({
     idleTimeout: 0,
     maxLifetime: 0,
     maxBackpressure: 0,
+    maxPayloadLength: 1 * 1024 * 1024,
     sendPingsAutomatically: false,
     upgrade: (res, req, context) => {
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
