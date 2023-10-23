@@ -119,7 +119,7 @@ const app = uws.SSLApp({
                     if (result == 1) {
                         backPressure[ws.id].shift();
                     }
-                    console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${result}, size=${backPressure[ws.id].length}`);
+                    console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${result}, size=${backPressure[ws.id].length}, bufferedAmount=${ws.getBufferedAmount()}`);
                 }
             }
 
