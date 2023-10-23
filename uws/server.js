@@ -113,14 +113,16 @@ const app = uws.SSLApp({
         if (ws.isBackpressured && backPressure[ws.id]) {
 
             while (backPressure[ws.id].length > 0) {
-                if (ws.getBufferedAmount() < 1024) {
-                    const b = backPressure[ws.id][0];
-                    const result = ws.send(b, true, false);
-                    if (result == 1) {
-                        backPressure[ws.id].shift();
+                setTimeout(() => {
+                    if ((ws.getBufferedAmount() < 1024) && (ws.isOpen)) {
+                        const b = backPressure[ws.id][0];
+                        const result = ws.send(backPressure[ws.id], true, false);
+                        if (result == 1) {
+                            backPressure[ws.id].shift();
+                        }
+                        console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${result}, size=${backPressure[ws.id].length}, bufferedAmount=${ws.getBufferedAmount()}`);
                     }
-                    console.log(`${getCurrentDateTime()}: ${ws.id} backpressure3 draining status=${result}, size=${backPressure[ws.id].length}, bufferedAmount=${ws.getBufferedAmount()}`);
-                }
+                }, backPressure[ws.id].length * 10);
             }
 
             if (backPressure[ws.id].length === 0) {
