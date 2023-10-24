@@ -55,7 +55,7 @@ server.on('connection', (socket) => {
     });
 
     driver.on('open', (event) => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected rawIp=${socket.remoteAddress()} (${Math.round(performance.now() - tcpOpen)}ms)`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket connected rawIp=${socket.remoteAddress} (${Math.round(performance.now() - tcpOpen)}ms)`);
         buffer.forEach((b) => {
             driver.binary(b)
         });
