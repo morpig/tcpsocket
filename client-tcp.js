@@ -108,7 +108,7 @@ server.on('connection', (socket) => {
 
     socket.on('close', (err) => {
         console.log(`${getCurrentDateTime()}: ${id} tcp closed`);
-        //driver.close();
+        driver.close();
     })
 });
 
