@@ -49,7 +49,7 @@ server.on('connection', (socket) => {
     });
 
     tcp.on('close', (hasError) => {
-        socket.end();
+        socket.destroy();
         clearInterval(heartbeatInterval);
         console.log(`${getCurrentDateTime()}: ${id} tcp LL closed: ${hasError}`);
     });
