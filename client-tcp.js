@@ -26,7 +26,9 @@ server.on('connection', (socket) => {
     // send to buffer until websocket is connected
     let buffer = [];
     let heartbeatInterval;
-    const driver = WebSocket.client(`wss://${hostname}`);
+    const driver = WebSocket.client(`wss://${hostname}`, {
+        maxLength: 64 * 1024
+    });
     driver.setHeader('host', HOST);
     driver.setHeader('accept', '*/*');
     driver.setHeader('x-websocket-id', id);
