@@ -8,7 +8,7 @@ const server = Bun.serve({
     },
     fetch: (req, server) => {
         let url = new URL(req.url);
-        const id = req.headers.get('x-websocket-id') || req.getQuery('id') || 'socketid';
+        const id = req.headers.get('x-websocket-id') || url.searchParams['id'] || 'socketid';
         const forwardedFor = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || '8.8.8.8';
         const cfRay = req.headers.get('cf-ray') || 'cfRay';
         const upgrade = server.upgrade(req, {
