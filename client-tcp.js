@@ -75,6 +75,9 @@ server.on('connection', (socket) => {
     driver.on('close', ({ code, reason }) => {
         //console.log(`${getCurrentDateTime()}: ${id} close`)
         console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
+        if (!socket.destroyed) {
+            socket.destroy();
+        }
     })
     
     driver.messages.on('data', (data) => {
