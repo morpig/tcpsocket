@@ -21,6 +21,8 @@ const app = uws.SSLApp({
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
         const cfRay = req.getHeader('cf-ray') || 'cfRay';
 
+        buffers[id] = [];
+
         console.log(`${getCurrentDateTime()}: ${id} ws upgrade: cfRay=${cfRay}, remote=${forwardedFor}, extensions=${req.getHeader('sec-websocket-extensions')}, protocol=${req.getHeader('sec-websocket-protocol')}, key=${req.getHeader('sec-websocket-key')}, version=${req.getHeader('sec-websocket-version')}`)
         // server received upgrade request -> upgrade request to websocket
         res.upgrade(
@@ -28,6 +30,7 @@ const app = uws.SSLApp({
                 'cfRay': cfRay,
                 'forwardedFor': forwardedFor,
                 id: id,
+                buffer: []
             },
             req.getHeader('sec-websocket-key'),
             req.getHeader('sec-websocket-protocol'),
@@ -42,7 +45,6 @@ const app = uws.SSLApp({
         ws.isOpen = true;
         ws.isBackpressured = false;
         ws.rawIp = Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8');
-        buffers[ws.id] = [];
 
         const hostname = HOST.split(':')[0];
         const port = HOST.split(':')[1];
@@ -51,11 +53,11 @@ const app = uws.SSLApp({
         ws.tcpConnection.setKeepAlive(true);
 
         ws.tcpConnection.connect(port, hostname, () => {
-            buffers[ws.id].forEach((b) => {
-                ws.tcpConnection.write(Buffer.from(b, 'base64'))
+            ws.buffer.forEach((b) => {
+                ws.tcpConnection.write(Buffer.from(b));
             })
             //ws.tcpConnection.write(Buffer.from(buffers[ws.id]));
-            buffers[ws.id] = null;
+            ws.buffer = null;
 
             //ws.isBackpressured = true;
             console.log(`${getCurrentDateTime()}: ${ws.id} ws+tcp open: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
@@ -116,8 +118,8 @@ const app = uws.SSLApp({
             return;
         }
 
-        if (buffers[ws.id] !== null) {
-            buffers[ws.id].push(Buffer.from(message).toString('base64'));
+        if (ws.buffer !== null) {
+            ws.buffer.push(message.slice(0));
             return;
         }
 
