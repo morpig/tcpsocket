@@ -20,7 +20,7 @@ function openConnection(id) {
     });
 
     socket.addEventListener("open", event => {
-        console.log(`${getCurrentDateTime()}: ${id} connected to ws`)
+        console.log(`${getCurrentDateTime()}: ${id} connected to ws time=${Math.round(performance.now() - tcpOpen)}ms`);
     });
 
     socket.addEventListener("close", event => {
@@ -28,8 +28,7 @@ function openConnection(id) {
     });
 
     socket.addEventListener("error", event => {
-        console.log(event);
-        console.log(`${getCurrentDateTime()}: ${id} error`)
+        console.log(`${getCurrentDateTime()}: ${id} ws errored: ${event}`)
     });
 }
 

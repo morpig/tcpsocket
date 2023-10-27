@@ -33,7 +33,6 @@ const server = Bun.serve({
         async message(ws, message, isBinary) {
             // on websocket receive msg event
             const buffer = Buffer.from(message);
-            console.log(message);
             if (buffer.toString('utf-8') === 'ping') {
                 ws.send(Buffer.from('ping'))
             }
