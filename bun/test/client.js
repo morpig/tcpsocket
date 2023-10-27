@@ -9,7 +9,11 @@ function openConnection(id) {
     let buffer = [];
     let heartbeatInterval;
 
-    const socket = new WebSocket(HOST);
+    const socket = new WebSocket(HOST, {
+        headers: {
+            'x-websocket-id': id
+        }
+    });
 
     // message is received
     socket.addEventListener("message", event => {
