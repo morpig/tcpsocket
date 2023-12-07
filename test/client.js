@@ -41,6 +41,7 @@ function openConnection(id) {
     });
 
     ws.on('message', (data) => {
+        console.log(data)
         if (data.toString() === 'ping') {
             return;
         }

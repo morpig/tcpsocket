@@ -10,6 +10,7 @@ const app = uws.SSLApp({
 }).ws('/*', {
     idleTimeout: 0,
     sendPingsAutomatically: false,
+    maxBackpressure: 1,
     upgrade: (res, req, context) => {
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
@@ -31,6 +32,12 @@ const app = uws.SSLApp({
     },
     open: (ws) => {
         // on websocket open event
+        setInterval(() => {
+            const result = ws.send(Buffer.alloc(64 * 1024));
+            if (result != 1) {
+                console.log(result);
+            }
+        }, 100);
         ws.subscribe('cfpingtest');
         ws.send(Buffer.from('connect-ping'));
         ws.rawIp = Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8');

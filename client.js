@@ -37,19 +37,10 @@ server.on('connection', (socket) => {
         buffer.forEach((b) => {
             ws.send(b);
         });
-        heartbeatInterval = setInterval(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send(Buffer.from('ping').toString('utf8'));
-            }
-        }, 5000)
         buffer = null;
     });
 
     ws.on('message', (data) => {
-        if (data.toString() === 'ping') {
-            return;
-        }
-
         socket.write(data);
     });
 

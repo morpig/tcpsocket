@@ -61,9 +61,6 @@ server.on('connection', (socket) => {
         buffer.forEach((b) => {
             driver.binary(b)
         });
-        heartbeatInterval = setInterval(() => {
-            driver.binary(Buffer.from('ping'));
-        }, 5000)
         buffer = null;
     })
     
@@ -82,9 +79,8 @@ server.on('connection', (socket) => {
     
     driver.messages.on('data', (data) => {
         const buffer = Buffer.from(data);
-        if (buffer.toString() === 'ping') {
-            return;
-        }
+        //console.log(buffer);
+        //console.log(buffer.toString())
         socket.write(data);
     });
 
