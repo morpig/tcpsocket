@@ -1,8 +1,11 @@
 const net = require('net');
 const WebSocket = require('ws');
+const axios = require('axios');
+const os = require("os");
 
 // PORT=3000 HOST=wss://gpu6-0.serverdream.net
-const { PORT, HOST } = process.env;
+const { HOST, PORT, LOG_URL } = process.env;
+const isLogEnabled = (LOG_URL) ? true : false;
 
 const server = new net.Server();
 
@@ -33,11 +36,16 @@ server.on('connection', (socket) => {
     });
 
     ws.on('open', () => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`);
         buffer.forEach((b) => {
             ws.send(b);
         });
         buffer = null;
+        console.log(`${getCurrentDateTime()}: ${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`);
+        sendLogs(Date.now(), `${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`, {
+            type: 'WS_OPEN',
+            id: id,
+            time: Math.round(performance.now() - tcpOpen)
+        });
     });
 
     ws.on('message', (data) => {
@@ -45,13 +53,23 @@ server.on('connection', (socket) => {
     });
 
     ws.on('close', (code, reason) => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
         socket.destroy();
         clearInterval(heartbeatInterval);
+        console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
+        sendLogs(Date.now(), `${id} websocket closed ${code} ${reason} (${Math.round(performance.now() - tcpOpen)}ms`, {
+            type: 'WS_CLOSED',
+            code: code,
+            reason: reason,
+            id: id,
+        });
     });
 
     ws.on('error', (err) => {
         console.log(`${getCurrentDateTime()}: ${id} websocket error ${err}`);
+        sendLogs(Date.now(), `${id} websocket error ${err}`, {
+            type: 'WS_ERROR',
+            err: err
+        });
     });
 
     var init = true;
@@ -74,20 +92,54 @@ server.on('connection', (socket) => {
 
     socket.on('end', () => {
         console.log(`${getCurrentDateTime()}: ${id} tcp end!`);
+        sendLogs(Date.now(), `${id} tcp end!`, {
+            type: 'TCP_END',
+            id: id,
+        });
     });
 
     socket.on('error', (err) => {
         console.log(`${getCurrentDateTime()}: ${id} tcp error ${err}`);
+        sendLogs(Date.now(), `${id} tcp error!`, {
+            type: 'TCP_ERROR',
+            id: id,
+            err: err
+        });
     });
 
     socket.on('close', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} tcp closed`);
         if (ws.readyState === WebSocket.OPEN) {
             console.log(`${getCurrentDateTime()}: ${id} closing ws due to tcp close`)
             ws.close(4000, 'client tcp closed');
         }
+        console.log(`${getCurrentDateTime()}: ${id} tcp closed`);
+        sendLogs(Date.now(), `${id} tcp closed!`, {
+            type: 'TCP_CLOSED',
+            id: id,
+            err: err
+        });
     })
 });
+
+function sendLogs(_time, message, data) {
+    if (isLogEnabled) {
+        axios.post(LOG_URL, {
+            _time,
+            message,
+            data: {
+                ...data,
+                origin: 'CLIENT',
+                hostname: os.hostname()
+            }
+        }, {
+            timeout: 5000
+        }).then(() => {
+            //
+        }).catch(() => {
+            //
+        })
+    }
+}
 
 function getCurrentDateTime() {
     const now = new Date();
