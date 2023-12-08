@@ -42,6 +42,9 @@ const app = uws.SSLApp({
         ws.isOpen = true;
         ws.isBackpressured = false;
         ws.rawIp = Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8');
+        if (ws.rawIp.includes('0000:0000:0000:0000:0000:ffff')) {
+            ws.rawIp = convertIPv6ToIPv4(Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8'));
+        }
         ws.connectedDate = new Date();
 
         const hostname = HOST.split(':')[0];
@@ -117,6 +120,20 @@ const app = uws.SSLApp({
         console.log(`Listening to port ${PORT}`)
     }
 });
+
+function convertIPv6ToIPv4(ipv6) {
+    // Extract the last two segments of the IPv6 address
+    const ipv6Parts = ipv6.split(':');
+    const ipv4Hex = ipv6Parts.slice(-2).join('');
+
+    // Split the 8-character string into two-character pairs
+    const ipv4Bytes = ipv4Hex.match(/.{1,2}/g);
+
+    // Convert each pair from hex to decimal
+    const ipv4 = ipv4Bytes.map(hexPair => parseInt(hexPair, 16)).join('.');
+
+    return ipv4;
+}
 
 function getCurrentDateTime() {
     const now = new Date();
