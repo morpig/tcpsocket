@@ -18,7 +18,7 @@ server.listen(PORT, () => {
 server.on('connection', (socket) => {
     const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
-    const address = socket.edgeAddress;
+    const address = socket.remoteAddress;
     socket.setKeepAlive(true);
 
     console.log(`${getCurrentDateTime()}: ${id} tcp open`)
