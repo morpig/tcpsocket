@@ -18,6 +18,7 @@ server.listen(PORT, () => {
 server.on('connection', (socket) => {
     const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
+    const address = socket.remoteAddress;
     socket.setKeepAlive(true);
 
     console.log(`${getCurrentDateTime()}: ${id} tcp open`)
@@ -44,6 +45,7 @@ server.on('connection', (socket) => {
         sendLogs(Date.now(), `${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`, {
             type: 'WS_OPEN',
             id: id,
+            address: address,
             time: Math.round(performance.now() - tcpOpen)
         });
     });
@@ -61,6 +63,7 @@ server.on('connection', (socket) => {
             code: code,
             reason: reason,
             id: id,
+            address: address
         });
     });
 
@@ -91,16 +94,16 @@ server.on('connection', (socket) => {
     })
 
     socket.on('end', () => {
-        console.log(`${getCurrentDateTime()}: ${id} tcp end!`);
-        sendLogs(Date.now(), `${id} tcp end!`, {
+        console.log(`${getCurrentDateTime()}: ${id} remote tcp end`);
+        sendLogs(Date.now(), `${id} remote tcp end!`, {
             type: 'TCP_END',
             id: id,
         });
     });
 
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} tcp error ${err}`);
-        sendLogs(Date.now(), `${id} tcp error!`, {
+        console.log(`${getCurrentDateTime()}: ${id} remote tcp error ${err}`);
+        sendLogs(Date.now(), `${id} remote tcp error!`, {
             type: 'TCP_ERROR',
             id: id,
             err: err
@@ -109,11 +112,17 @@ server.on('connection', (socket) => {
 
     socket.on('close', (err) => {
         if (ws.readyState === WebSocket.OPEN) {
-            console.log(`${getCurrentDateTime()}: ${id} closing ws due to tcp close`)
             ws.close(4000, 'client tcp closed');
+            console.log(`${getCurrentDateTime()}: ${id} remote tcp closed, closing WS`)
+            sendLogs(Date.now(), `${id} remote tcp closed! closing ws`, {
+                type: 'TCP_CLOSED',
+                id: id,
+                err: err
+            });
+            return;
         }
-        console.log(`${getCurrentDateTime()}: ${id} tcp closed`);
-        sendLogs(Date.now(), `${id} tcp closed!`, {
+        console.log(`${getCurrentDateTime()}: ${id} remote tcp closed`);
+        sendLogs(Date.now(), `${id} remote tcp closed!`, {
             type: 'TCP_CLOSED',
             id: id,
             err: err
