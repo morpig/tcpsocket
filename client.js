@@ -18,7 +18,7 @@ server.listen(PORT, () => {
 server.on('connection', (socket) => {
     const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
-    const address = socket.remoteAddress;
+    const address = socket.edgeAddress;
     socket.setKeepAlive(true);
 
     console.log(`${getCurrentDateTime()}: ${id} tcp open`)
@@ -94,16 +94,16 @@ server.on('connection', (socket) => {
     })
 
     socket.on('end', () => {
-        console.log(`${getCurrentDateTime()}: ${id} remote tcp end`);
-        sendLogs(Date.now(), `${id} remote tcp end!`, {
+        console.log(`${getCurrentDateTime()}: ${id} edge tcp end`);
+        sendLogs(Date.now(), `${id} edge tcp end!`, {
             type: 'TCP_END',
             id: id,
         });
     });
 
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} remote tcp error ${err}`);
-        sendLogs(Date.now(), `${id} remote tcp error!`, {
+        console.log(`${getCurrentDateTime()}: ${id} edge tcp error ${err}`);
+        sendLogs(Date.now(), `${id} edge tcp error!`, {
             type: 'TCP_ERROR',
             id: id,
             err: err
@@ -112,17 +112,17 @@ server.on('connection', (socket) => {
 
     socket.on('close', (err) => {
         if (ws.readyState === WebSocket.OPEN) {
-            ws.close(4000, 'client tcp closed');
-            console.log(`${getCurrentDateTime()}: ${id} remote tcp closed, closing WS`)
-            sendLogs(Date.now(), `${id} remote tcp closed! closing ws`, {
+            ws.close(4000, 'edge tcp closed');
+            console.log(`${getCurrentDateTime()}: ${id} edge tcp closed, closing WS`)
+            sendLogs(Date.now(), `${id} edge tcp closed! closing ws`, {
                 type: 'TCP_CLOSED',
                 id: id,
                 err: err
             });
             return;
         }
-        console.log(`${getCurrentDateTime()}: ${id} remote tcp closed`);
-        sendLogs(Date.now(), `${id} remote tcp closed!`, {
+        console.log(`${getCurrentDateTime()}: ${id} edge tcp closed`);
+        sendLogs(Date.now(), `${id} edge tcp closed!`, {
             type: 'TCP_CLOSED',
             id: id,
             err: err
