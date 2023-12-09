@@ -58,10 +58,10 @@ server.on('connection', (socket) => {
         socket.destroy();
         clearInterval(heartbeatInterval);
         console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
-        sendLogs(Date.now(), `${id} websocket closed ${code} ${reason} (${Math.round(performance.now() - tcpOpen)}ms`, {
+        sendLogs(Date.now(), `${id} websocket closed ${code} ${reason} (${Math.round(performance.now() - tcpOpen)}ms)`, {
             type: 'WS_CLOSED',
             code: code,
-            reason: reason,
+            reason: reason.toString(),
             id: id,
             address: address
         });
