@@ -29,8 +29,8 @@ server.on('connection', (socket) => {
     const ws = new WebSocket(HOST, {
         handshakeTimeout: 2500,
         perMessageDeflate: false,
-        maxPayload: 64 * 1024,
-        skipUTF8Validation: false,
+        maxPayload: 64 * 1024 * 1024,
+        skipUTF8Validation: true,
         headers: {
             'x-websocket-id': id
         }
