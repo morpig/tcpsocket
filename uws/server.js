@@ -32,6 +32,7 @@ const app = uws.SSLApp({
         res.upgrade(
             {
                 'cfRay': cfRay,
+                'cfColo': cfColo,
                 'forwardedFor': forwardedFor,
                 id: id,
                 buffer: []
