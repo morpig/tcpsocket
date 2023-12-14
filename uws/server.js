@@ -24,6 +24,7 @@ const app = uws.SSLApp({
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
         const cfRay = req.getHeader('cf-ray') || 'cfRay';
+        const cfColo = req.getHeader('x-cloudflare-colo') || 'cfColo';
 
         buffers[id] = [];
 
@@ -61,11 +62,12 @@ const app = uws.SSLApp({
                 ws.tcpConnection.write(Buffer.from(b));
             })
             ws.buffer = null;
-            console.log(`${getCurrentDateTime()}: ${ws.id} ws+tcp open: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
-            sendLogs(Date.now(), `${ws.id} ws+tcp open: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
+            console.log(`${getCurrentDateTime()}: ${ws.id} ws+tcp open: cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
+            sendLogs(Date.now(), `${ws.id} ws+tcp open: cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
                 type: 'WS_OPEN',
                 id: ws.id,
                 cfRay: ws.cfRay,
+                cfColo: ws.cfColo,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -77,11 +79,12 @@ const app = uws.SSLApp({
                 const result = ws.send(data, true, false);
                 if (result === 0 && !ws.isBackpressured) {
                     ws.isBackpressured = true;
-                    console.log(`${getCurrentDateTime()}: ${ws.id} connection backpressured: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
-                    sendLogs(Date.now(), `${ws.id} connection backpressured: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
+                    console.log(`${getCurrentDateTime()}: ${ws.id} connection backpressured: buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
+                    sendLogs(Date.now(), `${ws.id} connection backpressured: buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
                         type: 'BACKPRESSURE_TRIGGERED',
                         id: ws.id,
                         cfRay: ws.cfRay,
+                        cfColo: ws.cfColo,
                         remoteIp: ws.forwardedFor,
                         rawIp: ws.rawIp,
                         origin: 'SERVER'
@@ -97,6 +100,7 @@ const app = uws.SSLApp({
                 type: 'TCP_ORIGIN_ERROR',
                 id: ws.id,
                 cfRay: ws.cfRay,
+                cfColo: ws.cfColo,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -108,6 +112,7 @@ const app = uws.SSLApp({
                 type: 'TCP_CLOSED',
                 id: ws.id,
                 cfRay: ws.cfRay,
+                cfColo: ws.cfColo,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -130,11 +135,12 @@ const app = uws.SSLApp({
     },
     drain: (ws) => {
         if (ws.getBufferedAmount() < 1024) {
-            console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
-            sendLogs(Date.now(), `${ws.id} backpressure drain completed buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
+            console.log(`${getCurrentDateTime()}: ${ws.id} backpressure drain done buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
+            sendLogs(Date.now(), `${ws.id} backpressure drain completed buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
                 type: 'WS_DRAIN',
                 id: ws.id,
                 cfRay: ws.cfRay,
+                cfColo: ws.cfColo,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -151,8 +157,8 @@ const app = uws.SSLApp({
         if (ws.tcpConnection.readyState === 'open') {
             ws.tcpConnection.end();
         }
-        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}`)
-        sendLogs(Date.now(), `${ws.id} ws closed: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}`, {
+        console.log(`${getCurrentDateTime()}: ${ws.id} ws closed: cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}`)
+        sendLogs(Date.now(), `${ws.id} ws closed: cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}`, {
             type: 'WS_CLOSED',
             code: code,
             message: message,
