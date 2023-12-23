@@ -55,8 +55,8 @@ server.on('connection', (socket) => {
 
     tcp.on('error', (err) => {
         console.log(err);
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LL_ERROR, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=TCP_LL_ERROR, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LL_ERROR, err=${err}, url=${driver.url}, socket=${clientAddress}`);
+        sendLogs(Date.now(), `${id} event=TCP_LL_ERROR, err=${err}, url=${driver.url}, socket=${clientAddress}`, {
             type: 'TCP_LL_ERROR',
             err: err,
             id: id,
@@ -67,8 +67,8 @@ server.on('connection', (socket) => {
 
     tcp.on('close', (hasError) => {
         socket.destroy();
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LL_CLOSED, hasError=${hasError}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=TCP_LL_CLOSED, hasError=${hasError}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LL_CLOSED, hasError=${hasError}, url=${driver.url}, socket=${clientAddress}`);
+        sendLogs(Date.now(), `${id} event=TCP_LL_CLOSED, hasError=${hasError}, url=${driver.url}, socket=${clientAddress}`, {
             type: 'TCP_LL_CLOSED',
             hasError: hasError,
             id: id,
