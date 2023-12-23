@@ -1,13 +1,17 @@
 const net = require('net');
 const tls = require('node:tls');
 const WebSocket = require('websocket-driver');
+const axios = require('axios');
+const os = require('os');
 
-// PORT=3000 HOST=wss://gpu6-0.serverdream.net
-const { PORT, HOST } = process.env;
+// define PORT & HOST in OS variables. TLS is required !!!
+// PORT=2087 HOST=websocket.test.net
+const { HOST, PORT, LOG_URL } = process.env;
+const isLogEnabled = (LOG_URL) ? true : false;
 
 const server = new net.Server();
 
-// create tcp server
+// start tcp server
 server.listen(PORT, () => {
     console.log(`${getCurrentDateTime()}: waiting for new conns ${PORT} ${HOST}`);
 });
@@ -16,6 +20,8 @@ server.listen(PORT, () => {
 server.on('connection', (socket) => {
     const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
+    const clientAddress = socket.remoteAddress;
+
     socket.setKeepAlive(true);
 
     //console.log(`${getCurrentDateTime()}: ${id} tcp open`);
@@ -39,6 +45,8 @@ server.on('connection', (socket) => {
         servername: hostname
     });
 
+    tcp.setKeepAlive(true);
+
     tcp.pipe(driver.io).pipe(tcp);
 
     tcp.on('connect', () => {
@@ -48,49 +56,75 @@ server.on('connection', (socket) => {
     tcp.on('error', (err) => {
         console.log(err);
         console.log(`${getCurrentDateTime()}: ${id} tcp LL error: ${err}`);
+        sendLogs(Date.now(), `${id} event=TCP_LL_ERROR, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+            type: 'TCP_LL_ERROR',
+            err: err,
+            id: id,
+            headers: driver.headers,
+            address: clientAddress
+        });
     });
 
     tcp.on('close', (hasError) => {
         socket.destroy();
-        clearInterval(heartbeatInterval);
         console.log(`${getCurrentDateTime()}: ${id} tcp LL closed: ${hasError}`);
+        sendLogs(Date.now(), `${id} event=TCP_LL_CLOSED, hasError=${hasError}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+            type: 'TCP_LL_CLOSED',
+            hasError: hasError,
+            id: id,
+            headers: driver.headers,
+            address: clientAddress
+        });
     });
 
-    driver.on('open', (event) => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected rawIp=${socket.remoteAddress} (${Math.round(performance.now() - tcpOpen)}ms)`);
+    driver.on('open', () => {
         buffer.forEach((b) => {
             driver.binary(b)
         });
         buffer = null;
+
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_OPEN, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`);
+        sendLogs(Date.now(), `${id} event=WS_OPEN, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
+            type: 'WS_OPEN',
+            id: id,
+            headers: driver.headers,
+            address: clientAddress,
+            time: Math.round(performance.now() - tcpOpen)
+        });
     })
     
     driver.on('error', (event) => {
         console.log(`${getCurrentDateTime()}: ${id} websocket error ${event}`);
-        clearInterval(heartbeatInterval);
+        sendLogs(Date.now(), `${id} event=WS_ERROR, error=${event}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+            type: 'WS_ERROR',
+            event: event,
+            id: id,
+            headers: driver.headers,
+            address: clientAddress
+        });
     })
     
     driver.on('close', ({ code, reason }) => {
         //console.log(`${getCurrentDateTime()}: ${id} close`)
-        console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
         if (!socket.destroyed) {
             socket.destroy();
         }
+        console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
+        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+            type: 'WS_CLOSE',
+            code: code,
+            reason: reason,
+            id: id,
+            headers: driver.headers,
+            address: clientAddress
+        });
     })
     
     driver.messages.on('data', (data) => {
-        const buffer = Buffer.from(data);
-        //console.log(buffer);
-        //console.log(buffer.toString())
-        socket.write(data);
+        const write = socket.write(data);
     });
 
-    var init = true;
-    let bufferConcat = Buffer.alloc(0);
     socket.on('data', (chunk) => {
-        if (init) {
-            init = false;
-        }
-
         if (buffer !== null) {
             buffer.push(chunk);
             return;
@@ -99,19 +133,62 @@ server.on('connection', (socket) => {
         const result = driver.binary(chunk);
     });
 
-    socket.on('end', () => {
-        //console.log(`${getCurrentDateTime()}: ${id} tcp end!`);
-    });
-
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} tcp error ${err}`);
+        console.log(`${getCurrentDateTime()}: ${id} local tcp error ${err}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+            type: 'TCP_LOCAL_ERROR',
+            err: err,
+            id: id,
+            headers: driver.headers,
+            address: clientAddress
+        });
     });
 
     socket.on('close', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} tcp closed`);
         driver.close();
+        console.log(`${getCurrentDateTime()}: ${id} local tcp closed`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+            type: 'TCP_LOCAL_CLOSED',
+            id: id,
+            headers: driver.headers,
+            address: clientAddress
+        });
     })
 });
+
+function sendLogs(_time, message, data) {
+    if (isLogEnabled) {
+        axios.post(LOG_URL, {
+            _time,
+            message,
+            data: {
+                ...data,
+                origin: 'CLIENT',
+                hostname: os.hostname()
+            }
+        }, {
+            timeout: 5000
+        }).then(() => {
+            //
+        }).catch(() => {
+            //
+        })
+    }
+}
+
+function convertIPv6ToIPv4(ipv6) {
+    // Extract the last two segments of the IPv6 address
+    const ipv6Parts = ipv6.split(':');
+    const ipv4Hex = ipv6Parts.slice(-2).join('');
+
+    // Split the 8-character string into two-character pairs
+    const ipv4Bytes = ipv4Hex.match(/.{1,2}/g);
+
+    // Convert each pair from hex to decimal
+    const ipv4 = ipv4Bytes.map(hexPair => parseInt(hexPair, 16)).join('.');
+
+    return ipv4;
+}
 
 function getCurrentDateTime() {
     const now = new Date();
