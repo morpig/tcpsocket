@@ -18,6 +18,7 @@ server.listen(PORT, () => {
 
 // on new tcp connection
 server.on('connection', (socket) => {
+    let isSlowDown = false;
     const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
     const clientAddress = socket.remoteAddress;

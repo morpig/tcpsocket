@@ -19,6 +19,20 @@ server.on('connection', (socket) => {
     const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
     const address = socket.remoteAddress;
+    let metrics = {
+        rx: {
+            seq: 0,
+            size: 0,
+            lastRcvd: 0
+        },
+        tx: {
+            seq: 0,
+            size: 0,
+            lastSent: 0
+        }
+    }
+    let headers, cfRay, url;
+
     socket.setKeepAlive(true);
 
     console.log(`${getCurrentDateTime()}: ${id} tcp open`)
@@ -27,6 +41,7 @@ server.on('connection', (socket) => {
     let buffer = [];
     let heartbeatInterval;
     const ws = new WebSocket(HOST, {
+        allowSynchronousEvents: true,
         handshakeTimeout: 2500,
         perMessageDeflate: false,
         maxPayload: 64 * 1024 * 1024,
@@ -36,52 +51,65 @@ server.on('connection', (socket) => {
         }
     });
 
+    ws.on('upgrade', (res) => {
+        headers = res.headers;
+        cfRay = res.headers['cf-ray'];
+    });
+
     ws.on('open', () => {
         buffer.forEach((b) => {
             ws.send(b);
+            metrics["tx"]["seq"]++;
+            metrics["tx"]["size"] = Buffer.byteLength(b);
+            metrics["tx"]["lastSent"] = new Date().getTime();
         });
         buffer = null;
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`);
-        sendLogs(Date.now(), `${id} websocket connected (${Math.round(performance.now() - tcpOpen)}ms)`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_OPEN, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`);
+        sendLogs(Date.now(), `${id} event=WS_OPEN, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
             type: 'WS_OPEN',
             id: id,
             address: address,
+            headers: headers,
             time: Math.round(performance.now() - tcpOpen)
         });
     });
 
     ws.on('message', (data) => {
         socket.write(data);
+        metrics["rx"]["seq"]++;
+        metrics["rx"]["size"] = Buffer.byteLength(data);
+        metrics["rx"]["lastRcvd"] = new Date().getTime();
+        return;
     });
 
     ws.on('close', (code, reason) => {
         socket.destroy();
-        clearInterval(heartbeatInterval);
-        console.log(`${getCurrentDateTime()}: ${id} websocket closed: ${code} ${reason}`);
-        sendLogs(Date.now(), `${id} websocket closed ${code} ${reason} (${Math.round(performance.now() - tcpOpen)}ms)`, {
-            type: 'WS_CLOSED',
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, socket=${address}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
+        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, socket=${address}`, {
+            type: 'WS_CLOSE',
             code: code,
             reason: reason.toString(),
+            cfRay: cfRay,
             id: id,
-            address: address
+            headers: headers,
+            address: address,
+            metrics: metrics
         });
     });
 
     ws.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket error ${err}`);
-        sendLogs(Date.now(), `${id} websocket error ${err}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_ERROR, error=${err}, cfRay=${cfRay}, socket=${address}`);
+        sendLogs(Date.now(), `${id} event=WS_ERROR, error=${err}, cfRay=${cfRay}, socket=${address}`, {
             type: 'WS_ERROR',
-            err: err
+            event: err,
+            id: id,
+            headers: headers,
+            address: address,
+            metrics: metrics
         });
     });
 
-    var init = true;
-    let bufferConcat = Buffer.alloc(0);
     socket.on('data', (chunk) => {
-        if (init) {
-            init = false;
-        }
-
         if (buffer !== null) {
             buffer.push(chunk);
             return;
@@ -89,43 +117,35 @@ server.on('connection', (socket) => {
 
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(chunk);
+            metrics["tx"]["seq"]++;
+            metrics["tx"]["size"] = Buffer.byteLength(chunk);
+            metrics["tx"]["lastSent"] = new Date().getTime();
             return;
         }
-    })
-
-    socket.on('end', () => {
-        console.log(`${getCurrentDateTime()}: ${id} edge tcp end`);
-        sendLogs(Date.now(), `${id} edge tcp end!`, {
-            type: 'TCP_END',
-            id: id,
-        });
     });
 
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} edge tcp error ${err}`);
-        sendLogs(Date.now(), `${id} edge tcp error!`, {
-            type: 'TCP_ERROR',
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, socket=${address}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, socket=${address}`, {
+            type: 'TCP_LOCAL_ERROR',
+            err: err,
             id: id,
-            err: err
+            headers: headers,
+            address: address
         });
     });
 
     socket.on('close', (err) => {
         if (ws.readyState === WebSocket.OPEN) {
             ws.close(4000, 'edge tcp closed');
-            console.log(`${getCurrentDateTime()}: ${id} edge tcp closed, closing WS`)
-            sendLogs(Date.now(), `${id} edge tcp closed! closing ws`, {
-                type: 'TCP_CLOSED',
-                id: id,
-                err: err
-            });
-            return;
         }
-        console.log(`${getCurrentDateTime()}: ${id} edge tcp closed`);
-        sendLogs(Date.now(), `${id} edge tcp closed!`, {
-            type: 'TCP_CLOSED',
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, socket=${address}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, socket=${address}`, {
+            type: 'TCP_LOCAL_CLOSED',
             id: id,
-            err: err
+            headers: headers,
+            address: address,
+            metrics: metrics
         });
     })
 });

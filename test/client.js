@@ -23,6 +23,8 @@ function openConnection(id) {
         }
     });
 
+    console.log(ws);
+
     ws.on('upgrade', (res) => {
         ws.cfRay = res.headers['cf-ray'] || `cfRay-${id}`
     });
