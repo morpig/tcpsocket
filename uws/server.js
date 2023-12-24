@@ -180,7 +180,7 @@ const app = uws.SSLApp({
             ws.tcpConnection.end();
         }
         console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics['rx'])}, tx=${JSON.stringify(ws.metrics['tx'])}`)
-        sendLogs(Date.now(), `${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}`, {
+        sendLogs(Date.now(), `${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
             type: 'WS_CLOSED',
             code: code,
             message: message,
