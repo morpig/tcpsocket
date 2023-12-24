@@ -21,6 +21,7 @@ server.on('connection', (socket) => {
     const tcpOpen = performance.now();
     const id = generateRandomCharacters(6);
     const clientAddress = socket.remoteAddress;
+    let cfRay, headers;
 
     socket.setKeepAlive(true);
 
@@ -60,7 +61,7 @@ server.on('connection', (socket) => {
             type: 'TCP_LL_ERROR',
             err: err,
             id: id,
-            headers: driver.headers,
+            headers: headers,
             address: clientAddress
         });
     });
@@ -72,34 +73,36 @@ server.on('connection', (socket) => {
             type: 'TCP_LL_CLOSED',
             hasError: hasError,
             id: id,
-            headers: driver.headers,
+            headers: headers,
             address: clientAddress
         });
     });
 
     driver.on('open', () => {
+        headers = driver.headers;
+        cfRay = driver.headers['cf-ray']
         buffer.forEach((b) => {
             driver.binary(b)
         });
         buffer = null;
 
-        console.log(`${getCurrentDateTime()}: ${id} event=WS_OPEN, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`);
-        sendLogs(Date.now(), `${id} event=WS_OPEN, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_OPEN, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`);
+        sendLogs(Date.now(), `${id} event=WS_OPEN, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
             type: 'WS_OPEN',
             id: id,
-            headers: driver.headers,
+            headers: headers,
             address: clientAddress,
             time: Math.round(performance.now() - tcpOpen)
         });
     })
     
     driver.on('error', (event) => {
-        console.log(`${getCurrentDateTime()}: ${id} event=WS_ERROR, error=${event}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=WS_ERROR, error=${event}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_ERROR, error=${event}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`);
+        sendLogs(Date.now(), `${id} event=WS_ERROR, error=${event}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`, {
             type: 'WS_ERROR',
             event: event,
             id: id,
-            headers: driver.headers,
+            headers: headers,
             address: clientAddress
         });
     })
@@ -109,13 +112,14 @@ server.on('connection', (socket) => {
         if (!socket.destroyed) {
             socket.destroy();
         }
-        console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`);
+        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`, {
             type: 'WS_CLOSE',
             code: code,
             reason: reason,
+            cfRay: cfRay,
             id: id,
-            headers: driver.headers,
+            headers: headers,
             address: clientAddress
         });
     })
@@ -134,23 +138,23 @@ server.on('connection', (socket) => {
     });
 
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`, {
             type: 'TCP_LOCAL_ERROR',
             err: err,
             id: id,
-            headers: driver.headers,
+            headers: headers,
             address: clientAddress
         });
     });
 
     socket.on('close', (err) => {
         driver.close();
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${driver.headers['cf-ray']}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`, {
             type: 'TCP_LOCAL_CLOSED',
             id: id,
-            headers: driver.headers,
+            headers: headers,
             address: clientAddress
         });
     })
