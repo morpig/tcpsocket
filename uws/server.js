@@ -15,11 +15,11 @@ const app = uws.SSLApp({
     key_file_name: `../ssl/privkey.pem`
     
 }).ws('/*', {
-    idleTimeout: 0,
+    idleTimeout: 10,
     maxLifetime: 0,
     maxBackpressure: 0,
     maxPayloadLength: 64 * 1024 * 1024,
-    sendPingsAutomatically: false,
+    sendPingsAutomatically: true,
     upgrade: (res, req, context) => {
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
@@ -142,16 +142,15 @@ const app = uws.SSLApp({
     },
     message: (ws, message, isBinary) => {
         // on websocket receive msg event
-        const buffer = Buffer.from(message)
         if (ws.buffer !== null) {
             ws.buffer.push(message.slice(0));
             return;
         }
 
         if (ws.tcpConnection.readyState === 'open') {
-            ws.tcpConnection.write(buffer);
+            ws.tcpConnection.write(new Uint8Array(message));
             ws.metrics["rx"]["seq"]++;
-            ws.metrics["rx"]["size"] = Buffer.byteLength(buffer);
+            ws.metrics["rx"]["size"] = Buffer.byteLength(message);
             ws.metrics["rx"]["lastRcvd"] = new Date().getTime();
         }
     },
@@ -193,7 +192,7 @@ const app = uws.SSLApp({
         });
     }
 }).get('/*', (res, req) => { // opposite!
-    res.writeStatus('200 OK').end('OK');
+    return res.writeStatus('200 OK').end('OK', true);
 }).listen(parseInt(PORT), (listenSocket) => {
     if (listenSocket) {
         console.log(`Listening to port ${PORT}`)
