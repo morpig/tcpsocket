@@ -15,11 +15,11 @@ const app = uws.SSLApp({
     key_file_name: `../ssl/privkey.pem`
     
 }).ws('/*', {
-    idleTimeout: 10,
+    idleTimeout: 0,
     maxLifetime: 0,
     maxBackpressure: 0,
-    maxPayloadLength: 64 * 1024 * 1024,
-    sendPingsAutomatically: true,
+    maxPayloadLength: 16 * 1024 * 1024,
+    sendPingsAutomatically: false,
     upgrade: (res, req, context) => {
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
@@ -72,7 +72,7 @@ const app = uws.SSLApp({
 
         ws.tcpConnection.connect(port, hostname, () => {
             ws.buffer.forEach((b) => {
-                ws.tcpConnection.write(Buffer.from(b));
+                ws.tcpConnection.write(new Uint8Array(b));
                 ws.metrics["rx"]["seq"]++;
                 ws.metrics["rx"]["size"] = Buffer.byteLength(b);
                 ws.metrics["rx"]["lastRcvd"] = new Date().getTime();
@@ -92,7 +92,7 @@ const app = uws.SSLApp({
 
         ws.tcpConnection.on('data', (data) => {
             if (ws.isOpen) {
-                const result = ws.send(data, true, false);
+                const result = ws.send(data.buffer, true, false);
                 ws.metrics["tx"]["seq"]++;
                 ws.metrics["tx"]["size"] = Buffer.byteLength(data);
                 ws.metrics["tx"]["lastSent"] = new Date().getTime();
@@ -141,17 +141,17 @@ const app = uws.SSLApp({
         });
     },
     message: (ws, message, isBinary) => {
-        // on websocket receive msg event
-        if (ws.buffer !== null) {
-            ws.buffer.push(message.slice(0));
-            return;
-        }
-
         if (ws.tcpConnection.readyState === 'open') {
             ws.tcpConnection.write(new Uint8Array(message));
             ws.metrics["rx"]["seq"]++;
             ws.metrics["rx"]["size"] = Buffer.byteLength(message);
             ws.metrics["rx"]["lastRcvd"] = new Date().getTime();
+            return;
+        }
+
+        if (ws.buffer !== null) {
+            ws.buffer.push(message.slice(0));
+            return;
         }
     },
     drain: (ws) => {
@@ -176,7 +176,7 @@ const app = uws.SSLApp({
         delete buffers[ws.id];
         // on websocket close event
         if (ws.tcpConnection.readyState === 'open') {
-            ws.tcpConnection.end();
+            ws.tcpConnection.destroy();
         }
         console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics['rx'])}, tx=${JSON.stringify(ws.metrics['tx'])}`)
         sendLogs(Date.now(), `${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics["rx"])}, tx=${JSON.stringify(ws.metrics["tx"])}`, {
