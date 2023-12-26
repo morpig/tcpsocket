@@ -31,7 +31,7 @@ server.on('connection', (socket) => {
             lastSent: 0
         }
     }
-    let headers, cfRay, url, pingInterval, pingTime, receivedPing = false;
+    let headers, cfRay, url;
 
     socket.setKeepAlive(true);
     
@@ -72,29 +72,6 @@ server.on('connection', (socket) => {
             headers: headers,
             time: Math.round(performance.now() - tcpOpen)
         });
-
-        // send ping every 10 seconds
-        pingInterval = setInterval(() => {
-            receivedPing = false;
-            pingTime = new Date().getTime();
-            ws.ping();
-
-            // timeout handler (1s delay)
-            setTimeout(() => {
-                if (!receivedPing && (ws.readyState === WebSocket.OPEN)) {
-                    ws.terminate();
-                    console.log(`${getCurrentDateTime()}: ${id} event=WS_PING_TIMEOUT, pingTime=${pingTime}, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`);
-                    sendLogs(Date.now(), `${id} event=WS_PING_TIMEOUT, pingTime=${pingTime}, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
-                        type: 'WS_PING_TIMEOUT',
-                        id: id,
-                        pingTime: pingTime,
-                        address: address,
-                        headers: headers,
-                        time: Math.round(performance.now() - tcpOpen)
-                    });
-                }
-            }, 5000);
-        }, 10000);
     });
 
     ws.on('message', (data) => {
@@ -106,7 +83,6 @@ server.on('connection', (socket) => {
     });
 
     ws.on('close', (code, reason) => {
-        clearInterval(pingInterval);
         socket.destroy();
         console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, socket=${address}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
         sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, socket=${address}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
@@ -131,26 +107,6 @@ server.on('connection', (socket) => {
             address: address,
             metrics: metrics
         });
-    });
-
-    ws.on('pong', () => {
-        receivedPing = true;
-        //console.log(`${new Date()}: received ping check, latency=${new Date().getTime() - pingTime}`);
-
-        const latency = new Date().getTime() - pingTime;
-        if (latency >= 1000) {
-            console.log(`${getCurrentDateTime()}: ${id} event=WS_PING_HIGH_LATENCY, latency=${latency}ms, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`);
-            sendLogs(Date.now(), `${id} event=WS_PING_HIGH_LATENCY, latency=${latency}ms, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
-                type: 'WS_PING_HIGH_LATENCY',
-                latency: latency,
-                pingTime: pingTime,
-                id: id,
-                pingTime: pingTime,
-                address: address,
-                headers: headers,
-                time: Math.round(performance.now() - tcpOpen)
-            });
-        }
     });
 
     socket.on('data', (chunk) => {
