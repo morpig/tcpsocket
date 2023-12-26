@@ -42,7 +42,7 @@ server.on('connection', (socket) => {
     let heartbeatInterval;
     const ws = new WebSocket(HOST, {
         allowSynchronousEvents: true,
-        handshakeTimeout: 2500,
+        handshakeTimeout: 10000,
         perMessageDeflate: false,
         maxPayload: 64 * 1024 * 1024,
         skipUTF8Validation: true,
@@ -138,7 +138,7 @@ server.on('connection', (socket) => {
         //console.log(`${new Date()}: received ping check, latency=${new Date().getTime() - pingTime}`);
 
         const latency = new Date().getTime() - pingTime;
-        if (latency >= 500) {
+        if (latency >= 1000) {
             console.log(`${getCurrentDateTime()}: ${id} event=WS_PING_HIGH_LATENCY, latency=${latency}ms, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`);
             sendLogs(Date.now(), `${id} event=WS_PING_HIGH_LATENCY, latency=${latency}ms, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
                 type: 'WS_PING_HIGH_LATENCY',

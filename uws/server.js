@@ -178,7 +178,7 @@ const app = uws.SSLApp({
         if (ws.tcpConnection.readyState === 'open') {
             ws.tcpConnection.destroy();
         }
-        console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics['rx'])}, tx=${JSON.stringify(ws.metrics['tx'])}`)
+        console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics['rx'])}, tx=${JSON.stringify(ws.metrics['tx'])}`)
         sendLogs(Date.now(), `${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics["rx"])}, tx=${JSON.stringify(ws.metrics["tx"])}`, {
             type: 'WS_CLOSED',
             code: code,
