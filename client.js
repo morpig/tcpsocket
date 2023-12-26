@@ -93,7 +93,7 @@ server.on('connection', (socket) => {
                         time: Math.round(performance.now() - tcpOpen)
                     });
                 }
-            }, 1000);
+            }, 5000);
         }, 10000);
     });
 
