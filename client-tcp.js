@@ -47,7 +47,7 @@ server.on('connection', (socket) => {
         servername: hostname
     });
 
-    tcp.setKeepAlive(true);
+    tcp.setKeepAlive(false);
 
     tcp.pipe(driver.io).pipe(tcp);
 
@@ -81,11 +81,7 @@ server.on('connection', (socket) => {
 
     driver.on('open', () => {
         headers = driver.headers;
-        cfRay = driver.headers['cf-ray']
-        buffer.forEach((b) => {
-            driver.binary(b)
-        });
-        buffer = null;
+        cfRay = driver.headers['cf-ray'];
 
         console.log(`${getCurrentDateTime()}: ${id} event=WS_OPEN, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`);
         sendLogs(Date.now(), `${id} event=WS_OPEN, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
@@ -130,11 +126,6 @@ server.on('connection', (socket) => {
     });
 
     socket.on('data', (chunk) => {
-        if (buffer !== null) {
-            buffer.push(chunk);
-            return;
-        }
-
         const result = driver.binary(chunk);
     });
 
