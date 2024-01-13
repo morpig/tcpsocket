@@ -34,6 +34,19 @@ server.on('connection', (socket) => {
     // send to buffer until websocket is connected
     let buffer = [];
     let heartbeatInterval;
+    let metrics = {
+        rx: {
+            seq: 0,
+            size: 0,
+            lastRcvd: 0
+        },
+        tx: {
+            seq: 0,
+            size: 0,
+            lastSent: 0
+        }
+    }
+
     const driver = WebSocket.client(`wss://${hostname}`, {
         maxLength: 64 * 1024
     });
@@ -109,45 +122,54 @@ server.on('connection', (socket) => {
         if (!socket.destroyed) {
             socket.destroy();
         }
-        console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
+        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
             type: 'WS_CLOSE',
             code: code,
             reason: reason,
             cfRay: cfRay,
             id: id,
             headers: headers,
-            address: clientAddress
+            address: clientAddress,
+            metrics: metrics
         });
     })
     
     driver.messages.on('data', (data) => {
         const write = socket.write(data);
+        metrics["rx"]["seq"]++;
+        metrics["rx"]["size"] = Buffer.byteLength(data);
+        metrics["rx"]["lastRcvd"] = new Date().getTime();
     });
 
     socket.on('data', (chunk) => {
         const result = driver.binary(chunk);
+        metrics["tx"]["seq"]++;
+        metrics["tx"]["size"] = Buffer.byteLength(chunk);
+        metrics["tx"]["lastRcvd"] = new Date().getTime();
     });
 
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
             type: 'TCP_LOCAL_ERROR',
             err: err,
             id: id,
             headers: headers,
-            address: clientAddress
+            address: clientAddress,
+            metrics: metrics
         });
     });
 
     socket.on('close', (err) => {
         driver.close();
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`);
-        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
             type: 'TCP_LOCAL_CLOSED',
             id: id,
             headers: headers,
-            address: clientAddress
+            address: clientAddress,
+            metrics: metrics
         });
     })
 });
