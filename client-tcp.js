@@ -146,7 +146,7 @@ server.on('connection', (socket) => {
         const result = driver.binary(chunk);
         metrics["tx"]["seq"]++;
         metrics["tx"]["size"] = Buffer.byteLength(chunk);
-        metrics["tx"]["lastRcvd"] = new Date().getTime();
+        metrics["tx"]["lastSent"] = new Date().getTime();
     });
 
     socket.on('error', (err) => {
