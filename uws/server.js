@@ -68,7 +68,7 @@ const app = uws.SSLApp({
         const port = HOST.split(':')[1];
 
         ws.tcpConnection = new net.Socket();
-        ws.tcpConnection.setKeepAlive(true);
+        ws.tcpConnection.setKeepAlive(false);
 
         ws.tcpConnection.connect(port, hostname, () => {
             ws.buffer.forEach((b) => {
