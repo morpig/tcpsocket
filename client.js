@@ -33,7 +33,7 @@ server.on('connection', (socket) => {
     }
     let headers, cfRay, url;
 
-    socket.setKeepAlive(true);
+    socket.setKeepAlive(false);
     
     console.log(`${getCurrentDateTime()}: ${id} tcp open`)
 
