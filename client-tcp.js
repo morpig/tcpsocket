@@ -121,6 +121,7 @@ server.on('connection', (socket) => {
         //console.log(`${getCurrentDateTime()}: ${id} close`)
         if (!socket.destroyed) {
             socket.destroy();
+            tcp.destroy();
         }
         console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
         sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
@@ -162,7 +163,9 @@ server.on('connection', (socket) => {
     });
 
     socket.on('close', (err) => {
-        driver.close();
+        if (driver.readyState === 1) { //WebSocket OPEN
+            driver.close();
+        }
         console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
         sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, url=${driver.url}, socket=${clientAddress}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
             type: 'TCP_LOCAL_CLOSED',
