@@ -13,7 +13,8 @@
     "bufferutil": "^4.0.8",
     "moment": "^2.29.4",
     "tcp-websocket": "^0.1.1",
-    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.33.0",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.40.0",
+    "uws": "github:morpig/uws-client-node",
     "websocket-driver": "^0.7.4",
     "ws": "github:morpig/ws"
   }
