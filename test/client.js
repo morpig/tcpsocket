@@ -26,11 +26,13 @@ function openConnection(id) {
     console.log(ws);
 
     ws.on('upgrade', (res) => {
-        ws.cfRay = res.headers['cf-ray'] || `cfRay-${id}`
+        ws.cfRay = res.headers['cf-ray'] || `cfRay-${id}`,
+        ws.cfColoId = res.headers['x-cloudflare-colo'] || '0',
+        ws.cfMetalId = res.headers['x-cloudflare-metal'] || '0'
     });
 
     ws.on('open', () => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket connected, cfRay=${ws.cfRay}, time=${Math.round(performance.now() - tcpOpen)}ms`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket connected, cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId}, time=${Math.round(performance.now() - tcpOpen)}ms`);
         buffer.forEach((b) => {
             ws.send(b);
         });
