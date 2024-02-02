@@ -42,10 +42,11 @@ server.on('connection', (socket) => {
     let heartbeatInterval;
     const ws = new WebSocket(HOST, {
         allowSynchronousEvents: true,
-        handshakeTimeout: 10000,
+        rejectUnauthorized: true,
+        handshakeTimeout: 2500,
         perMessageDeflate: false,
         maxPayload: 64 * 1024 * 1024,
-        skipUTF8Validation: true,
+        skipUTF8Validation: false,
         headers: {
             'x-websocket-id': id
         }
@@ -74,7 +75,7 @@ server.on('connection', (socket) => {
         });
     });
 
-    ws.on('message', (data) => {
+    ws.on('message', (data, isBinary) => {
         socket.write(new Uint8Array(data));
         metrics["rx"]["seq"]++;
         metrics["rx"]["size"] = Buffer.byteLength(data);
