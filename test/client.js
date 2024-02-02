@@ -51,7 +51,7 @@ function openConnection(id) {
     });
 
     ws.on('close', (code, reason) => {
-        console.log(`${getCurrentDateTime()}: ${id} websocket closed: code=${code}, reason=${reason}, cfRay=${ws.cfRay}`);
+        console.log(`${getCurrentDateTime()}: ${id} websocket closed: code=${code}, reason=${reason}, cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId}`);
         clearInterval(heartbeatInterval);
     });
 
