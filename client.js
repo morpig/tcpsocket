@@ -31,7 +31,7 @@ server.on('connection', (socket) => {
             lastSent: 0
         }
     }
-    let headers, cfRay, url;
+    let headers, cfRay, cfColoId, cfMetalId, url;
 
     socket.setKeepAlive(false);
     
@@ -54,7 +54,9 @@ server.on('connection', (socket) => {
 
     ws.on('upgrade', (res) => {
         headers = res.headers;
-        cfRay = res.headers['cf-ray'];
+        cfRay = res.headers['cf-ray'] || `cfRay-${id}`,
+        cfColoId = res.headers['x-cloudflare-colo'] || '0',
+        cfMetalId = res.headers['x-cloudflare-metal'] || '0'
     });
 
     ws.on('open', () => {
@@ -65,10 +67,13 @@ server.on('connection', (socket) => {
             metrics["tx"]["lastSent"] = new Date().getTime();
         });
         buffer = null;
-        console.log(`${getCurrentDateTime()}: ${id} event=WS_OPEN, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`);
-        sendLogs(Date.now(), `${id} event=WS_OPEN, cfRay=${cfRay}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_OPEN, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`);
+        sendLogs(Date.now(), `${id} event=WS_OPEN, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}, time=${Math.round(performance.now() - tcpOpen)}ms`, {
             type: 'WS_OPEN',
             id: id,
+            cfRay: cfRay,
+            cfMetalId: cfMetalId,
+            cfColoId: cfColoId,
             address: address,
             headers: headers,
             time: Math.round(performance.now() - tcpOpen)
@@ -85,12 +90,14 @@ server.on('connection', (socket) => {
 
     ws.on('close', (code, reason) => {
         socket.destroy();
-        console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, socket=${address}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
-        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, socket=${address}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`);
+        sendLogs(Date.now(), `${id} event=WS_CLOSE, code=${code}, reason=${reason}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}, rx=${JSON.stringify(metrics["rx"])}, tx=${JSON.stringify(metrics["tx"])}`, {
             type: 'WS_CLOSE',
             code: code,
             reason: reason.toString(),
             cfRay: cfRay,
+            cfMetalId: cfMetalId,
+            cfColoId: cfColoId,
             id: id,
             headers: headers,
             address: address,
@@ -99,8 +106,8 @@ server.on('connection', (socket) => {
     });
 
     ws.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} event=WS_ERROR, error=${err}, cfRay=${cfRay}, socket=${address}`);
-        sendLogs(Date.now(), `${id} event=WS_ERROR, error=${err}, cfRay=${cfRay}, socket=${address}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=WS_ERROR, error=${err}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}`);
+        sendLogs(Date.now(), `${id} event=WS_ERROR, error=${err}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}`, {
             type: 'WS_ERROR',
             event: err,
             id: id,
@@ -126,8 +133,8 @@ server.on('connection', (socket) => {
     });
 
     socket.on('error', (err) => {
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, socket=${address}`);
-        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, socket=${address}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_ERROR, err=${err}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}`, {
             type: 'TCP_LOCAL_ERROR',
             err: err,
             id: id,
@@ -140,8 +147,8 @@ server.on('connection', (socket) => {
         if (ws.readyState === WebSocket.OPEN) {
             ws.close(4000, 'edge tcp closed');
         }
-        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, socket=${address}`);
-        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, socket=${address}`, {
+        console.log(`${getCurrentDateTime()}: ${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}`);
+        sendLogs(Date.now(), `${id} event=TCP_LOCAL_CLOSED, err=${err}, cfRay=${cfRay}, cfColo=${cfColoId}, cfMetal=${cfMetalId}, socket=${address}`, {
             type: 'TCP_LOCAL_CLOSED',
             id: id,
             headers: headers,
