@@ -147,7 +147,6 @@ const app = uws.SSLApp({
         });
     },
     message: (ws, message, isBinary) => {
-        console.log(message);
         if (ws.tcpConnection.readyState === 'open') {
             ws.tcpConnection.write(new Uint8Array(message));
             ws.metrics["rx"]["seq"]++;
