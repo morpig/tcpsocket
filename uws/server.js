@@ -24,7 +24,8 @@ const app = uws.SSLApp({
         const id = req.getHeader('x-websocket-id') || req.getQuery('id') || 'socketid';
         const forwardedFor = req.getHeader('cf-connecting-ip') || req.getHeader('x-forwarded-for') || '8.8.8.8';
         const cfRay = req.getHeader('cf-ray') || 'cfRay';
-        const cfColo = req.getHeader('x-cloudflare-colo') || 'cfColo';
+        const cfColoId = req.getHeader('x-cloudflare-colo') || 'cfColo';
+        const cfMetalId = req.getHeader('x-cloudflare-metal') || 'cfMetal';
 
         buffers[id] = [];
 
@@ -32,7 +33,8 @@ const app = uws.SSLApp({
         res.upgrade(
             {
                 'cfRay': cfRay,
-                'cfColo': cfColo,
+                'cfColoId': cfColoId,
+                'cfMetalId': cfMetalId,
                 'forwardedFor': forwardedFor,
                 id: id,
                 buffer: []
@@ -78,12 +80,13 @@ const app = uws.SSLApp({
                 ws.metrics["rx"]["lastRcvd"] = new Date().getTime();
             })
             ws.buffer = null;
-            console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_OPEN, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
-            sendLogs(Date.now(), `${ws.id} event=WS_OPEN, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
+            console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_OPEN, cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
+            sendLogs(Date.now(), `${ws.id} event=WS_OPEN, cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
                 type: 'WS_OPEN',
                 id: ws.id,
                 cfRay: ws.cfRay,
-                cfColo: ws.cfColo,
+                cfColoId: ws.cfColoId,
+                cfMetalId: ws.cfMetalId,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -98,12 +101,13 @@ const app = uws.SSLApp({
                 ws.metrics["tx"]["lastSent"] = new Date().getTime();
                 if (result === 0 && !ws.isBackpressured) {
                     ws.isBackpressured = true;
-                    console.log(`${getCurrentDateTime()}: ${ws.id} event=BACKPRESSURE_TRIGGERED buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
-                    sendLogs(Date.now(), `${ws.id} event=BACKPRESSURE_TRIGGERED buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
+                    console.log(`${getCurrentDateTime()}: ${ws.id} event=BACKPRESSURE_TRIGGERED buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
+                    sendLogs(Date.now(), `${ws.id} event=BACKPRESSURE_TRIGGERED buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
                         type: 'BACKPRESSURE_TRIGGERED',
                         id: ws.id,
                         cfRay: ws.cfRay,
-                        cfColo: ws.cfColo,
+                        cfColoId: ws.cfColoId,
+                        cfMetalId: ws.cfMetalId,
                         remoteIp: ws.forwardedFor,
                         rawIp: ws.rawIp,
                         origin: 'SERVER'
@@ -119,7 +123,8 @@ const app = uws.SSLApp({
                 type: 'TCP_ORIGIN_ERROR',
                 id: ws.id,
                 cfRay: ws.cfRay,
-                cfColo: ws.cfColo,
+                cfColoId: ws.cfColoId,
+                cfMetalId: ws.cfMetalId,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -131,7 +136,8 @@ const app = uws.SSLApp({
                 type: 'TCP_CLOSED',
                 id: ws.id,
                 cfRay: ws.cfRay,
-                cfColo: ws.cfColo,
+                cfColoId: ws.cfColoId,
+                cfMetalId: ws.cfMetalId,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -141,6 +147,7 @@ const app = uws.SSLApp({
         });
     },
     message: (ws, message, isBinary) => {
+        console.log(message);
         if (ws.tcpConnection.readyState === 'open') {
             ws.tcpConnection.write(new Uint8Array(message));
             ws.metrics["rx"]["seq"]++;
@@ -156,12 +163,13 @@ const app = uws.SSLApp({
     },
     drain: (ws) => {
         if (ws.getBufferedAmount() < 1024) {
-            console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_DRAIN_COMPLETED, buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
-            sendLogs(Date.now(), `${ws.id} event=WS_DRAIN_COMPLETED, buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
+            console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_DRAIN_COMPLETED, buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
+            sendLogs(Date.now(), `${ws.id} event=WS_DRAIN_COMPLETED, buffer=${ws.getBufferedAmount()} cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`, {
                 type: 'WS_DRAIN',
                 id: ws.id,
                 cfRay: ws.cfRay,
-                cfColo: ws.cfColo,
+                cfColoId: ws.cfColoId,
+                cfMetalId: ws.cfMetalId,
                 remoteIp: ws.forwardedFor,
                 rawIp: ws.rawIp
             });
@@ -178,13 +186,15 @@ const app = uws.SSLApp({
         if (ws.tcpConnection.readyState === 'open') {
             ws.tcpConnection.destroy();
         }
-        console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics['rx'])}, tx=${JSON.stringify(ws.metrics['tx'])}`)
-        sendLogs(Date.now(), `${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColo}, remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics["rx"])}, tx=${JSON.stringify(ws.metrics["tx"])}`, {
+        console.log(`${getCurrentDateTime()}: ${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics['rx'])}, tx=${JSON.stringify(ws.metrics['tx'])}`)
+        sendLogs(Date.now(), `${ws.id} event=WS_CLOSED, cfRay=${ws.cfRay}, cfColo=${ws.cfColoId}, cfMetal=${ws.cfMetalId} remote=${ws.forwardedFor}, code=${code}, reason=${Buffer.from(message).toString('utf-8')}, firstConnect=${moment(ws.connectedDate).fromNow()}, rx=${JSON.stringify(ws.metrics["rx"])}, tx=${JSON.stringify(ws.metrics["tx"])}`, {
             type: 'WS_CLOSED',
             code: code,
             message: message,
             id: ws.id,
             cfRay: ws.cfRay,
+            cfColoId: ws.cfColoId,
+            cfMetalId: ws.cfMetalId,
             remoteIp: ws.forwardedFor,
             rawIp: ws.rawIp,
             metrics: ws.metrics,
