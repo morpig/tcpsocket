@@ -31,20 +31,13 @@ const app = uws.SSLApp({
         );
     },
     open: (ws) => {
-        // on websocket open event
-        setInterval(() => {
-            const result = ws.send(Buffer.alloc(64 * 1024));
-            if (result != 1) {
-                console.log(result);
-            }
-        }, 100);
         ws.subscribe('cfpingtest');
         ws.send(Buffer.from('connect-ping'));
         ws.rawIp = Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8');
         if (ws.rawIp.includes('0000:0000:0000:0000:0000:ffff')) {
             ws.rawIp = convertIPv6ToIPv4(Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8'));
         }
-        console.log(`${getCurrentDateTime()}: ${ws.id} ws open: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${Buffer.from(ws.getRemoteAddressAsText()).toString('utf-8')}`);
+        console.log(`${getCurrentDateTime()}: ${ws.id} ws open: cfRay=${ws.cfRay}, remote=${ws.forwardedFor}, rawIp: ${ws.rawIp}`);
     },
     message: (ws, message, isBinary) => {
         // on websocket receive msg event
